@@ -18,6 +18,8 @@ func New(source string) *TokenList {
 	}
 }
 
+// TODO: check bufio.NewScanner custom Split method
+
 func (tl *TokenList) ScanTokens() *[]Token {
 	for !tl.isAtEnd() {
 		tl.start = tl.current
@@ -33,28 +35,22 @@ func (tl *TokenList) isAtEnd() bool {
 
 func (tl *TokenList) scanToken() {
 	c := tl.advance()
-	switch c {
-	case '(':
-		tl.addToken(LEFT_PAREN, "")
-	case ')':
-		tl.addToken(RIGHT_PAREN, "")
-	case '{':
-		tl.addToken(LEFT_BRACE, "")
-	case '}':
-		tl.addToken(RIGHT_BRACE, "")
-	case ',':
-		tl.addToken(COMMA, "")
-	case '.':
-		tl.addToken(DOT, "")
-	case '-':
-		tl.addToken(MINUS, "")
-	case '+':
-		tl.addToken(PLUS, "")
-	case ';':
-		tl.addToken(SEMICOLON, "")
-	case '*':
-		tl.addToken(STAR, "")
+	singleCharLexemes := map[byte]TokenType{
+		'(': LEFT_PAREN,
+		')': RIGHT_PAREN,
+		'{': LEFT_BRACE,
+		'}': RIGHT_BRACE,
+		',': COMMA,
+		'.': DOT,
+		'-': MINUS,
+		'+': PLUS,
+		';': SEMICOLON,
+		'*': STAR,
 	}
+	if v, ok := singleCharLexemes[c]; ok {
+		tl.addToken(v, "")
+	}
+	error(tl.line, "Unexpected character.")
 }
 
 func (tl *TokenList) advance() byte {
