@@ -76,7 +76,7 @@ func (tl *TokenList) isAtEnd() bool {
 
 func (tl *TokenList) advance() byte {
 	tl.current++
-	return tl.source[tl.current]
+	return tl.source[tl.current-1]
 }
 
 func (tl *TokenList) addToken(typ TokenType, literal interface{}) {
