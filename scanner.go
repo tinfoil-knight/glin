@@ -103,9 +103,26 @@ func (tl *TokenList) scanToken() {
 	switch c {
 	case '/':
 		if tl.match('/') {
+			// single-line comments
 			for tl.peek() != '\n' && !tl.isAtEnd() {
 				tl.advance()
 			}
+		} else if tl.match('*') {
+			// block comments
+			commentClose := tl.peek() == '*' && tl.peekNext() == '/'
+			for !commentClose && !tl.isAtEnd() {
+				if tl.peek() == '\n' {
+					tl.line++
+				}
+				tl.advance()
+			}
+			if tl.isAtEnd() {
+				error(tl.line, "Unterminated block comment.")
+				return
+			}
+			// closing */
+			tl.advance()
+			tl.advance()
 		} else {
 			tl.addToken(SLASH, "")
 		}
@@ -139,7 +156,7 @@ func (tl *TokenList) string() {
 		error(tl.line, "Unterminated string.")
 		return
 	}
-
+	// closing "
 	tl.advance()
 
 	value := tl.source[tl.start+1 : tl.current-1]
