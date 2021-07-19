@@ -10,6 +10,45 @@ type TokenList struct {
 	line    int
 }
 
+var singleCharLexemes = map[byte]TokenType{
+	'(': LEFT_PAREN,
+	')': RIGHT_PAREN,
+	'{': LEFT_BRACE,
+	'}': RIGHT_BRACE,
+	',': COMMA,
+	'.': DOT,
+	'-': MINUS,
+	'+': PLUS,
+	';': SEMICOLON,
+	'*': STAR,
+}
+
+var multiCharLexemes = map[byte][]TokenType{
+	'!': {BANG_EQUAL, BANG},
+	'=': {EQUAL_EQUAL, EQUAL},
+	'<': {LESS_EQUAL, LESS},
+	'>': {GREATER_EQUAL, GREATER},
+}
+
+var keywords = map[string]TokenType{
+	"and":    AND,
+	"class":  CLASS,
+	"else":   ELSE,
+	"false":  FALSE,
+	"for":    FOR,
+	"fun":    FUN,
+	"if":     IF,
+	"nil":    NIL,
+	"or":     OR,
+	"print":  PRINT,
+	"return": RETURN,
+	"super":  SUPER,
+	"this":   THIS,
+	"true":   TRUE,
+	"var":    VAR,
+	"while":  WHILE,
+}
+
 func New(source string) *TokenList {
 	return &TokenList{
 		source:  source,
@@ -44,26 +83,6 @@ func (tl *TokenList) addToken(typ TokenType, literal interface{}) {
 	text := tl.source[tl.start:tl.current]
 	newToken := Token{typ, text, literal, tl.line}
 	tl.tokens = append(tl.tokens, newToken)
-}
-
-var singleCharLexemes = map[byte]TokenType{
-	'(': LEFT_PAREN,
-	')': RIGHT_PAREN,
-	'{': LEFT_BRACE,
-	'}': RIGHT_BRACE,
-	',': COMMA,
-	'.': DOT,
-	'-': MINUS,
-	'+': PLUS,
-	';': SEMICOLON,
-	'*': STAR,
-}
-
-var multiCharLexemes = map[byte][]TokenType{
-	'!': {BANG_EQUAL, BANG},
-	'=': {EQUAL_EQUAL, EQUAL},
-	'<': {LESS_EQUAL, LESS},
-	'>': {GREATER_EQUAL, GREATER},
 }
 
 func (tl *TokenList) scanToken() {
@@ -146,7 +165,12 @@ func (tl *TokenList) identifer() {
 	for isAlphaNumeric(tl.peek()) {
 		tl.advance()
 	}
-	tl.addToken(IDENTIFIER, "")
+	text := tl.source[tl.start:tl.current]
+	if typ, ok := keywords[text]; ok {
+		tl.addToken(typ, "")
+	} else {
+		tl.addToken(IDENTIFIER, "")
+	}
 }
 
 func (tl *TokenList) match(expected byte) bool {
