@@ -1,5 +1,7 @@
 package main
 
+import "strconv"
+
 type TokenList struct {
 	source  string
 	tokens  []Token
@@ -33,26 +35,39 @@ func (tl *TokenList) isAtEnd() bool {
 	return tl.current >= len(tl.source)
 }
 
+func (tl *TokenList) advance() byte {
+	tl.current++
+	return tl.source[tl.current]
+}
+
+func (tl *TokenList) addToken(typ TokenType, literal interface{}) {
+	text := tl.source[tl.start:tl.current]
+	newToken := Token{typ, text, literal, tl.line}
+	tl.tokens = append(tl.tokens, newToken)
+}
+
+var singleCharLexemes = map[byte]TokenType{
+	'(': LEFT_PAREN,
+	')': RIGHT_PAREN,
+	'{': LEFT_BRACE,
+	'}': RIGHT_BRACE,
+	',': COMMA,
+	'.': DOT,
+	'-': MINUS,
+	'+': PLUS,
+	';': SEMICOLON,
+	'*': STAR,
+}
+
+var multiCharLexemes = map[byte][]TokenType{
+	'!': {BANG_EQUAL, BANG},
+	'=': {EQUAL_EQUAL, EQUAL},
+	'<': {LESS_EQUAL, LESS},
+	'>': {GREATER_EQUAL, GREATER},
+}
+
 func (tl *TokenList) scanToken() {
 	c := tl.advance()
-	singleCharLexemes := map[byte]TokenType{
-		'(': LEFT_PAREN,
-		')': RIGHT_PAREN,
-		'{': LEFT_BRACE,
-		'}': RIGHT_BRACE,
-		',': COMMA,
-		'.': DOT,
-		'-': MINUS,
-		'+': PLUS,
-		';': SEMICOLON,
-		'*': STAR,
-	}
-	multiCharLexemes := map[byte][]TokenType{
-		'!': {BANG_EQUAL, BANG},
-		'=': {EQUAL_EQUAL, EQUAL},
-		'<': {LESS_EQUAL, LESS},
-		'>': {GREATER_EQUAL, GREATER},
-	}
 
 	if v, ok := singleCharLexemes[c]; ok {
 		tl.addToken(v, "")
@@ -78,21 +93,60 @@ func (tl *TokenList) scanToken() {
 	case '\n':
 		tl.line++
 	case ' ', '\r', '\t':
-		// ignored
+		// whitespace is ignored
+	case '"':
+		tl.string()
 	default:
-		error(tl.line, "Unexpected character.")
+		if isDigit(c) {
+			tl.number()
+		} else if isAlpha(c) {
+			tl.identifer()
+		} else {
+			error(tl.line, "Unexpected character.")
+		}
+
 	}
 }
 
-func (tl *TokenList) advance() byte {
-	tl.current++
-	return tl.source[tl.current]
+func (tl *TokenList) string() {
+	for tl.peek() != '"' && !tl.isAtEnd() {
+		if tl.peek() == '\n' {
+			tl.line++
+		}
+		tl.advance()
+	}
+
+	if tl.isAtEnd() {
+		error(tl.line, "Unterminated string.")
+		return
+	}
+
+	tl.advance()
+
+	value := tl.source[tl.start+1 : tl.current-1]
+	tl.addToken(STRING, value)
 }
 
-func (tl *TokenList) addToken(typ TokenType, literal string) {
-	text := tl.source[tl.start:tl.current]
-	newToken := Token{typ, text, literal, tl.line}
-	tl.tokens = append(tl.tokens, newToken)
+func (tl *TokenList) number() {
+	for isDigit(tl.peek()) {
+		tl.advance()
+	}
+
+	if tl.peek() == '.' && isDigit(tl.peekNext()) {
+		tl.advance()
+		for isDigit(tl.peek()) {
+			tl.advance()
+		}
+	}
+	value, _ := strconv.ParseFloat(tl.source[tl.start:tl.current], 64)
+	tl.addToken(NUMBER, value)
+}
+
+func (tl *TokenList) identifer() {
+	for isAlphaNumeric(tl.peek()) {
+		tl.advance()
+	}
+	tl.addToken(IDENTIFIER, "")
 }
 
 func (tl *TokenList) match(expected byte) bool {
@@ -108,4 +162,23 @@ func (tl *TokenList) peek() byte {
 		return '\000'
 	}
 	return tl.source[tl.current]
+}
+
+func (tl *TokenList) peekNext() byte {
+	if tl.current+1 >= len(tl.source) {
+		return '\000'
+	}
+	return tl.source[tl.current+1]
+}
+
+func isDigit(c byte) bool {
+	return c >= '0' && c <= '9'
+}
+
+func isAlpha(c byte) bool {
+	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c == '_')
+}
+
+func isAlphaNumeric(c byte) bool {
+	return isAlpha(c) || isDigit(c)
 }
