@@ -1,5 +1,6 @@
 package main
 
+//go:generate stringer -type=TokenType
 type TokenType int
 
 // iota: https://github.com/golang/go/wiki/Iota

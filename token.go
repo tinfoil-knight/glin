@@ -9,6 +9,7 @@ type Token struct {
 	line    int         // location info
 }
 
+// uses generated code to work, ref: tokentype_string
 func (t Token) String() string {
-	return fmt.Sprintf("%v %s %s", t.typ, t.lexeme, t.literal)
+	return fmt.Sprintf("Token{%s %s}", t.typ, t.lexeme)
 }

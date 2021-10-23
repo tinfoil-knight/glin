@@ -50,7 +50,7 @@ var keywords = map[string]TokenType{
 	"while":  WHILE,
 }
 
-func New(source string) *TokenList {
+func NewTokenList(source string) *TokenList {
 	return &TokenList{
 		source:  source,
 		tokens:  []Token{},
@@ -192,9 +192,9 @@ func (tl *TokenList) identifer() {
 	text := tl.source[tl.start:tl.current]
 	if typ, ok := keywords[text]; ok {
 		// reserved keyword
-		tl.addToken(typ, "")
+		tl.addToken(typ, nil)
 	} else {
-		tl.addToken(IDENTIFIER, "")
+		tl.addToken(IDENTIFIER, nil)
 	}
 }
 
