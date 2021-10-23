@@ -12,13 +12,14 @@ var hadError = false
 
 func main() {
 	args := os.Args[1:]
+	path := os.Args[0]
 	switch len(args) {
 	case 0:
 		runPrompt()
 	case 1:
 		runFile(args[0])
 	default:
-		fmt.Println("Usage: glin <file-name>")
+		fmt.Println("Usage:", path, "<file-name>")
 		os.Exit(64)
 	}
 }
@@ -59,6 +60,6 @@ func error(line int, message string) {
 }
 
 func report(line int, where string, message string) {
-	fmt.Printf("[line %v] Error %s: %s", line, where, message)
+	fmt.Printf("[line %v] Error %s: %s\n", line, where, message)
 	hadError = true
 }

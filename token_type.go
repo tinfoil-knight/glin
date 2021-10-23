@@ -2,9 +2,10 @@ package main
 
 type TokenType int
 
+// iota: https://github.com/golang/go/wiki/Iota
 const (
-	// Single-character tokens
-	LEFT_PAREN = iota
+	// single-character tokens
+	LEFT_PAREN TokenType = iota
 	RIGHT_PAREN
 	LEFT_BRACE
 	RIGHT_BRACE
@@ -16,7 +17,7 @@ const (
 	SLASH
 	STAR
 
-	// One or two character tokens
+	// one or two character tokens
 	BANG
 	BANG_EQUAL
 	EQUAL
@@ -31,7 +32,7 @@ const (
 	STRING
 	NUMBER
 
-	// Keywords
+	// keywords
 	AND
 	CLASS
 	ELSE
@@ -49,6 +50,6 @@ const (
 	VAR
 	WHILE
 
-	// End of file
+	// end of file
 	EOF
 )

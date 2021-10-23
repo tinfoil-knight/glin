@@ -23,6 +23,7 @@ var singleCharLexemes = map[byte]TokenType{
 	'*': STAR,
 }
 
+// lexemes that can have either 1 or 2 chars
 var multiCharLexemes = map[byte][]TokenType{
 	'!': {BANG_EQUAL, BANG},
 	'=': {EQUAL_EQUAL, EQUAL},
@@ -66,7 +67,7 @@ func (tl *TokenList) ScanTokens() *[]Token {
 		tl.start = tl.current
 		tl.scanToken()
 	}
-	tl.tokens = append(tl.tokens, Token{EOF, "", "", tl.line})
+	tl.tokens = append(tl.tokens, Token{EOF, "", nil, tl.line})
 	return &tl.tokens
 }
 
@@ -74,6 +75,7 @@ func (tl *TokenList) isAtEnd() bool {
 	return tl.current >= len(tl.source)
 }
 
+// consume next char and return it
 func (tl *TokenList) advance() byte {
 	tl.current++
 	return tl.source[tl.current-1]
@@ -89,14 +91,14 @@ func (tl *TokenList) scanToken() {
 	c := tl.advance()
 
 	if v, ok := singleCharLexemes[c]; ok {
-		tl.addToken(v, "")
+		tl.addToken(v, nil)
 		return
 	}
 	if v, ok := multiCharLexemes[c]; ok {
 		if tl.match('=') {
-			tl.addToken(v[0], "")
+			tl.addToken(v[0], nil) // multi-char lexeme
 		} else {
-			tl.addToken(v[1], "")
+			tl.addToken(v[1], nil) // single-char lexeme
 		}
 		return
 	}
@@ -117,14 +119,15 @@ func (tl *TokenList) scanToken() {
 				tl.advance()
 			}
 			if tl.isAtEnd() {
-				error(tl.line, "Unterminated block comment.")
+				error(tl.line, "unterminated block comment")
 				return
 			}
 			// closing */
 			tl.advance()
 			tl.advance()
 		} else {
-			tl.addToken(SLASH, "")
+			// division
+			tl.addToken(SLASH, nil)
 		}
 	case '\n':
 		tl.line++
@@ -138,12 +141,12 @@ func (tl *TokenList) scanToken() {
 		} else if isAlpha(c) {
 			tl.identifer()
 		} else {
-			error(tl.line, "Unexpected character.")
+			error(tl.line, "unexpected character")
 		}
-
 	}
 }
 
+// scan a multi-line string literal
 func (tl *TokenList) string() {
 	for tl.peek() != '"' && !tl.isAtEnd() {
 		if tl.peek() == '\n' {
@@ -153,12 +156,14 @@ func (tl *TokenList) string() {
 	}
 
 	if tl.isAtEnd() {
-		error(tl.line, "Unterminated string.")
+		error(tl.line, "unterminated string")
 		return
 	}
+
 	// closing "
 	tl.advance()
 
+	// remove surrounding ""
 	value := tl.source[tl.start+1 : tl.current-1]
 	tl.addToken(STRING, value)
 }
@@ -178,12 +183,15 @@ func (tl *TokenList) number() {
 	tl.addToken(NUMBER, value)
 }
 
+// identifier : name supplied for variable, function etc.
 func (tl *TokenList) identifer() {
+	// isAlphaNumeric also supports '_'
 	for isAlphaNumeric(tl.peek()) {
 		tl.advance()
 	}
 	text := tl.source[tl.start:tl.current]
 	if typ, ok := keywords[text]; ok {
+		// reserved keyword
 		tl.addToken(typ, "")
 	} else {
 		tl.addToken(IDENTIFIER, "")
@@ -194,10 +202,11 @@ func (tl *TokenList) match(expected byte) bool {
 	if tl.isAtEnd() || tl.source[tl.current] != expected {
 		return false
 	}
-	tl.current++
+	tl.advance()
 	return true
 }
 
+// one char lookahead
 func (tl *TokenList) peek() byte {
 	if tl.isAtEnd() {
 		return '\000'
@@ -205,6 +214,7 @@ func (tl *TokenList) peek() byte {
 	return tl.source[tl.current]
 }
 
+// two char lookahead
 func (tl *TokenList) peekNext() byte {
 	if tl.current+1 >= len(tl.source) {
 		return '\000'
