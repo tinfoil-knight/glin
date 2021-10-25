@@ -8,8 +8,6 @@ import (
 	"strings"
 )
 
-var hadError = false
-
 func main() {
 	args := os.Args[1:]
 	path := os.Args[0]
@@ -53,13 +51,4 @@ func run(source string) {
 	for _, token := range tokens {
 		fmt.Println(token)
 	}
-}
-
-func error(line int, message string) {
-	report(line, "", message)
-}
-
-func report(line int, where string, message string) {
-	fmt.Printf("[line %v] Error %s: %s\n", line, where, message)
-	hadError = true
 }

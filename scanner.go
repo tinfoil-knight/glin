@@ -2,7 +2,7 @@ package main
 
 import "strconv"
 
-type TokenList struct {
+type Scanner struct {
 	source  string
 	tokens  []Token
 	start   int
@@ -50,8 +50,8 @@ var keywords = map[string]TokenType{
 	"while":  WHILE,
 }
 
-func NewTokenList(source string) *TokenList {
-	return &TokenList{
+func NewScanner(source string) *Scanner {
+	return &Scanner{
 		source:  source,
 		tokens:  []Token{},
 		start:   0,
@@ -62,164 +62,164 @@ func NewTokenList(source string) *TokenList {
 
 // TODO: check bufio.NewScanner custom Split method
 
-func (tl *TokenList) ScanTokens() *[]Token {
-	for !tl.isAtEnd() {
-		tl.start = tl.current
-		tl.scanToken()
+func (sc *Scanner) ScanTokens() *[]Token {
+	for !sc.isAtEnd() {
+		sc.start = sc.current
+		sc.scanToken()
 	}
-	tl.tokens = append(tl.tokens, Token{EOF, "", nil, tl.line})
-	return &tl.tokens
+	sc.tokens = append(sc.tokens, Token{EOF, "", nil, sc.line})
+	return &sc.tokens
 }
 
-func (tl *TokenList) isAtEnd() bool {
-	return tl.current >= len(tl.source)
+func (sc *Scanner) isAtEnd() bool {
+	return sc.current >= len(sc.source)
 }
 
 // consume next char and return it
-func (tl *TokenList) advance() byte {
-	tl.current++
-	return tl.source[tl.current-1]
+func (sc *Scanner) advance() byte {
+	sc.current++
+	return sc.source[sc.current-1]
 }
 
-func (tl *TokenList) addToken(typ TokenType, literal interface{}) {
-	text := tl.source[tl.start:tl.current]
-	newToken := Token{typ, text, literal, tl.line}
-	tl.tokens = append(tl.tokens, newToken)
+func (sc *Scanner) addToken(typ TokenType, literal interface{}) {
+	text := sc.source[sc.start:sc.current]
+	newToken := Token{typ, text, literal, sc.line}
+	sc.tokens = append(sc.tokens, newToken)
 }
 
-func (tl *TokenList) scanToken() {
-	c := tl.advance()
+func (sc *Scanner) scanToken() {
+	c := sc.advance()
 
 	if v, ok := singleCharLexemes[c]; ok {
-		tl.addToken(v, nil)
+		sc.addToken(v, nil)
 		return
 	}
 	if v, ok := multiCharLexemes[c]; ok {
-		if tl.match('=') {
-			tl.addToken(v[0], nil) // multi-char lexeme
+		if sc.match('=') {
+			sc.addToken(v[0], nil) // multi-char lexeme
 		} else {
-			tl.addToken(v[1], nil) // single-char lexeme
+			sc.addToken(v[1], nil) // single-char lexeme
 		}
 		return
 	}
 	switch c {
 	case '/':
-		if tl.match('/') {
+		if sc.match('/') {
 			// single-line comments
-			for tl.peek() != '\n' && !tl.isAtEnd() {
-				tl.advance()
+			for sc.peek() != '\n' && !sc.isAtEnd() {
+				sc.advance()
 			}
-		} else if tl.match('*') {
+		} else if sc.match('*') {
 			// block comments
-			commentClose := tl.peek() == '*' && tl.peekNext() == '/'
-			for !commentClose && !tl.isAtEnd() {
-				if tl.peek() == '\n' {
-					tl.line++
+			commentClose := sc.peek() == '*' && sc.peekNext() == '/'
+			for !commentClose && !sc.isAtEnd() {
+				if sc.peek() == '\n' {
+					sc.line++
 				}
-				tl.advance()
+				sc.advance()
 			}
-			if tl.isAtEnd() {
-				error(tl.line, "unterminated block comment")
+			if sc.isAtEnd() {
+				NewLexError(sc.line, "unterminated block comment")
 				return
 			}
 			// closing */
-			tl.advance()
-			tl.advance()
+			sc.advance()
+			sc.advance()
 		} else {
 			// division
-			tl.addToken(SLASH, nil)
+			sc.addToken(SLASH, nil)
 		}
 	case '\n':
-		tl.line++
+		sc.line++
 	case ' ', '\r', '\t':
 		// whitespace is ignored
 	case '"':
-		tl.string()
+		sc.string()
 	default:
 		if isDigit(c) {
-			tl.number()
+			sc.number()
 		} else if isAlpha(c) {
-			tl.identifer()
+			sc.identifer()
 		} else {
-			error(tl.line, "unexpected character")
+			NewLexError(sc.line, "unexpected character")
 		}
 	}
 }
 
 // scan a multi-line string literal
-func (tl *TokenList) string() {
-	for tl.peek() != '"' && !tl.isAtEnd() {
-		if tl.peek() == '\n' {
-			tl.line++
+func (sc *Scanner) string() {
+	for sc.peek() != '"' && !sc.isAtEnd() {
+		if sc.peek() == '\n' {
+			sc.line++
 		}
-		tl.advance()
+		sc.advance()
 	}
 
-	if tl.isAtEnd() {
-		error(tl.line, "unterminated string")
+	if sc.isAtEnd() {
+		NewLexError(sc.line, "unterminated string")
 		return
 	}
 
 	// closing "
-	tl.advance()
+	sc.advance()
 
 	// remove surrounding ""
-	value := tl.source[tl.start+1 : tl.current-1]
-	tl.addToken(STRING, value)
+	value := sc.source[sc.start+1 : sc.current-1]
+	sc.addToken(STRING, value)
 }
 
-func (tl *TokenList) number() {
-	for isDigit(tl.peek()) {
-		tl.advance()
+func (sc *Scanner) number() {
+	for isDigit(sc.peek()) {
+		sc.advance()
 	}
 
-	if tl.peek() == '.' && isDigit(tl.peekNext()) {
-		tl.advance()
-		for isDigit(tl.peek()) {
-			tl.advance()
+	if sc.peek() == '.' && isDigit(sc.peekNext()) {
+		sc.advance()
+		for isDigit(sc.peek()) {
+			sc.advance()
 		}
 	}
-	value, _ := strconv.ParseFloat(tl.source[tl.start:tl.current], 64)
-	tl.addToken(NUMBER, value)
+	value, _ := strconv.ParseFloat(sc.source[sc.start:sc.current], 64)
+	sc.addToken(NUMBER, value)
 }
 
 // identifier : name supplied for variable, function etc.
-func (tl *TokenList) identifer() {
+func (sc *Scanner) identifer() {
 	// isAlphaNumeric also supports '_'
-	for isAlphaNumeric(tl.peek()) {
-		tl.advance()
+	for isAlphaNumeric(sc.peek()) {
+		sc.advance()
 	}
-	text := tl.source[tl.start:tl.current]
+	text := sc.source[sc.start:sc.current]
 	if typ, ok := keywords[text]; ok {
 		// reserved keyword
-		tl.addToken(typ, nil)
+		sc.addToken(typ, nil)
 	} else {
-		tl.addToken(IDENTIFIER, nil)
+		sc.addToken(IDENTIFIER, nil)
 	}
 }
 
-func (tl *TokenList) match(expected byte) bool {
-	if tl.isAtEnd() || tl.source[tl.current] != expected {
+func (sc *Scanner) match(expected byte) bool {
+	if sc.isAtEnd() || sc.source[sc.current] != expected {
 		return false
 	}
-	tl.advance()
+	sc.advance()
 	return true
 }
 
 // one char lookahead
-func (tl *TokenList) peek() byte {
-	if tl.isAtEnd() {
+func (sc *Scanner) peek() byte {
+	if sc.isAtEnd() {
 		return '\000'
 	}
-	return tl.source[tl.current]
+	return sc.source[sc.current]
 }
 
 // two char lookahead
-func (tl *TokenList) peekNext() byte {
-	if tl.current+1 >= len(tl.source) {
+func (sc *Scanner) peekNext() byte {
+	if sc.current+1 >= len(sc.source) {
 		return '\000'
 	}
-	return tl.source[tl.current+1]
+	return sc.source[sc.current+1]
 }
 
 func isDigit(c byte) bool {
