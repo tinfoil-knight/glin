@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
-	"strings"
 )
 
 func main() {
@@ -47,8 +46,9 @@ func runPrompt() {
 }
 
 func run(source string) {
-	tokens := strings.Split(source, " ")
-	for _, token := range tokens {
+	scanner := NewScanner(source)
+	tokens := scanner.ScanTokens()
+	for _, token := range *tokens {
 		fmt.Println(token)
 	}
 }

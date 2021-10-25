@@ -1,6 +1,9 @@
 package main
 
-import "strconv"
+import (
+	"fmt"
+	"strconv"
+)
 
 type Scanner struct {
 	source  string
@@ -119,7 +122,7 @@ func (sc *Scanner) scanToken() {
 				sc.advance()
 			}
 			if sc.isAtEnd() {
-				NewLexError(sc.line, "unterminated block comment")
+				fmt.Println(NewLexError(sc.line, "unterminated block comment"))
 				return
 			}
 			// closing */
@@ -141,7 +144,7 @@ func (sc *Scanner) scanToken() {
 		} else if isAlpha(c) {
 			sc.identifer()
 		} else {
-			NewLexError(sc.line, "unexpected character")
+			fmt.Println(NewLexError(sc.line, "unexpected character"))
 		}
 	}
 }
@@ -156,7 +159,7 @@ func (sc *Scanner) string() {
 	}
 
 	if sc.isAtEnd() {
-		NewLexError(sc.line, "unterminated string")
+		fmt.Println(NewLexError(sc.line, "unterminated string"))
 		return
 	}
 

@@ -9,7 +9,6 @@ var hadError = false
 func reporter(line int, where string, message string) string {
 	hadError = true
 	s := fmt.Sprintf("[line %v] Error %s: %s\n", line, where, message)
-	fmt.Print(s)
 	return s
 }
 
