@@ -8,8 +8,8 @@ import (
 type AstPrinter struct {
 }
 
-func (a *AstPrinter) Print(e Expr) string {
-	return fmt.Sprint(e.accept(a))
+func (a *AstPrinter) Print(e Expr) {
+	fmt.Println(e.accept(a))
 }
 
 func (a *AstPrinter) visitBinaryExpr(b *Binary) interface{} {

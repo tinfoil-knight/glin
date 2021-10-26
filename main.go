@@ -56,5 +56,5 @@ func run(source string) {
 	}
 
 	printer := AstPrinter{}
-	fmt.Println(printer.Print(*expression))
+	printer.Print(*expression)
 }

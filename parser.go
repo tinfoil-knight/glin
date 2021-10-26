@@ -37,7 +37,7 @@ func (p *Parser) expression() Expr {
 func (p *Parser) equality() Expr {
 	expr := p.comparision()
 
-	if p.match(BANG_EQUAL, EQUAL_EQUAL) {
+	for p.match(BANG_EQUAL, EQUAL_EQUAL) {
 		operator := p.previous()
 		right := p.comparision()
 		expr = &Binary{expr, operator, right}
@@ -49,7 +49,7 @@ func (p *Parser) equality() Expr {
 func (p *Parser) comparision() Expr {
 	expr := p.term()
 
-	if p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
+	for p.match(GREATER, GREATER_EQUAL, LESS, LESS_EQUAL) {
 		operator := p.previous()
 		right := p.term()
 		expr = &Binary{expr, operator, right}
@@ -61,7 +61,7 @@ func (p *Parser) comparision() Expr {
 func (p *Parser) term() Expr {
 	expr := p.factor()
 
-	if p.match(MINUS, PLUS) {
+	for p.match(MINUS, PLUS) {
 		operator := p.previous()
 		right := p.factor()
 		expr = &Binary{expr, operator, right}
@@ -73,7 +73,7 @@ func (p *Parser) term() Expr {
 func (p *Parser) factor() Expr {
 	expr := p.unary()
 
-	if p.match(SLASH, STAR) {
+	for p.match(SLASH, STAR) {
 		operator := p.previous()
 		right := p.unary()
 		expr = &Binary{expr, operator, right}
@@ -178,7 +178,7 @@ func (p *Parser) synchronize() {
 
 		switch p.peek().typ {
 		case CLASS, FUN, VAR, FOR, IF, WHILE, PRINT:
-			// discard token
+			// discard tokens
 		case RETURN:
 			return
 		}
