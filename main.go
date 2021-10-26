@@ -48,7 +48,13 @@ func runPrompt() {
 func run(source string) {
 	scanner := NewScanner(source)
 	tokens := scanner.ScanTokens()
-	for _, token := range *tokens {
-		fmt.Println(token)
+	parser := NewParser(*tokens)
+	expression := parser.Parse()
+
+	if hadError {
+		return
 	}
+
+	printer := AstPrinter{}
+	fmt.Println(printer.Print(*expression))
 }
