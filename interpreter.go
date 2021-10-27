@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // Interpreter implements ExprVisitor
 type Interpreter struct {
 }
@@ -7,6 +9,20 @@ type Interpreter struct {
 func NewInterpreter() *Interpreter {
 	i := Interpreter{}
 	return &i
+}
+
+func (i *Interpreter) Interpret(e Expr) {
+	defer func() {
+		if err := recover(); err != nil {
+			if iErr, ok := err.(*RuntimeError); ok {
+				fmt.Println(iErr)
+			} else {
+				panic(err)
+			}
+		}
+	}()
+	result := i.evaluate(e)
+	fmt.Println(result)
 }
 
 func (i *Interpreter) evaluate(e Expr) interface{} {
@@ -26,6 +42,7 @@ func (i *Interpreter) visitUnaryExpr(u *Unary) interface{} {
 
 	switch u.operator.typ {
 	case MINUS:
+		checkNumberOperand(&u.operator, right)
 		return -(right).(float64)
 	case BANG:
 		return !isTruthy(right)
@@ -51,19 +68,27 @@ func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {
 				return l + r
 			}
 		}
+		panic(NewRuntimeError(&b.operator, "operands must be two numbers or two strings"))
 	case MINUS:
+		checkNumberOperands(&b.operator, left, right)
 		return left.(float64) - right.(float64)
 	case SLASH:
+		checkNumberOperands(&b.operator, left, right)
 		return left.(float64) / right.(float64)
 	case STAR:
+		checkNumberOperands(&b.operator, left, right)
 		return left.(float64) * right.(float64)
 	case GREATER:
+		checkNumberOperands(&b.operator, left, right)
 		return left.(float64) > right.(float64)
 	case GREATER_EQUAL:
+		checkNumberOperands(&b.operator, left, right)
 		return left.(float64) >= right.(float64)
 	case LESS:
+		checkNumberOperands(&b.operator, left, right)
 		return left.(float64) < right.(float64)
 	case LESS_EQUAL:
+		checkNumberOperands(&b.operator, left, right)
 		return left.(float64) <= right.(float64)
 	case EQUAL_EQUAL:
 		return isEqual(left, right)
@@ -87,4 +112,16 @@ func isTruthy(v interface{}) bool {
 
 func isEqual(a interface{}, b interface{}) bool {
 	return a == b
+}
+
+func checkNumberOperand(operator *Token, value interface{}) {
+	if _, ok := value.(float64); ok {
+		return
+	}
+	panic(NewRuntimeError(operator, "operand must be a number"))
+}
+
+func checkNumberOperands(operator *Token, left interface{}, right interface{}) {
+	checkNumberOperand(operator, left)
+	checkNumberOperand(operator, right)
 }

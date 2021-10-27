@@ -30,6 +30,9 @@ func runFile(path string) {
 	if hadError {
 		os.Exit(65)
 	}
+	if hadRuntimeError {
+		os.Exit(70)
+	}
 }
 
 func runPrompt() {
@@ -60,5 +63,5 @@ func run(source string) {
 	printer.Print(*expression)
 
 	in := NewInterpreter()
-	fmt.Println(in.evaluate(*expression))
+	in.Interpret(*expression)
 }

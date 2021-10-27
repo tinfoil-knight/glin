@@ -4,11 +4,11 @@ import (
 	"fmt"
 )
 
-// TODO: remove global var
+// TODO: remove global vars
 var hadError = false
+var hadRuntimeError = false
 
 func reporter(line int, where string, message string) string {
-	hadError = true
 	s := fmt.Sprintf("[line %v] Error %s: %s\n", line, where, message)
 	return s
 }
@@ -19,6 +19,7 @@ type LexError struct {
 }
 
 func NewLexError(line int, message string) error {
+	hadError = true
 	return &LexError{line, message}
 }
 
@@ -32,6 +33,7 @@ type ParseError struct {
 }
 
 func NewParseError(token *Token, message string) error {
+	hadError = true
 	return &ParseError{token, message}
 }
 
@@ -40,5 +42,20 @@ func (err *ParseError) Error() string {
 	if t.typ == EOF {
 		return reporter(t.line, " at end", err.message)
 	}
+	return reporter(t.line, "at '"+t.lexeme+"'", err.message)
+}
+
+type RuntimeError struct {
+	token   *Token
+	message string
+}
+
+func NewRuntimeError(token *Token, message string) error {
+	hadRuntimeError = true
+	return &RuntimeError{token, message}
+}
+
+func (err *RuntimeError) Error() string {
+	t := err.token
 	return reporter(t.line, "at '"+t.lexeme+"'", err.message)
 }
