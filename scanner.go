@@ -63,8 +63,6 @@ func NewScanner(source string) *Scanner {
 	}
 }
 
-// TODO: check bufio.NewScanner custom Split method
-
 func (sc *Scanner) ScanTokens() *[]Token {
 	for !sc.isAtEnd() {
 		sc.start = sc.current
@@ -72,22 +70,6 @@ func (sc *Scanner) ScanTokens() *[]Token {
 	}
 	sc.tokens = append(sc.tokens, Token{EOF, "", nil, sc.line})
 	return &sc.tokens
-}
-
-func (sc *Scanner) isAtEnd() bool {
-	return sc.current >= len(sc.source)
-}
-
-// consume next char and return it
-func (sc *Scanner) advance() byte {
-	sc.current++
-	return sc.source[sc.current-1]
-}
-
-func (sc *Scanner) addToken(typ TokenType, literal interface{}) {
-	text := sc.source[sc.start:sc.current]
-	newToken := Token{typ, text, literal, sc.line}
-	sc.tokens = append(sc.tokens, newToken)
 }
 
 func (sc *Scanner) scanToken() {
@@ -199,6 +181,22 @@ func (sc *Scanner) identifer() {
 	} else {
 		sc.addToken(IDENTIFIER, nil)
 	}
+}
+
+func (sc *Scanner) isAtEnd() bool {
+	return sc.current >= len(sc.source)
+}
+
+// consume next char and return it
+func (sc *Scanner) advance() byte {
+	sc.current++
+	return sc.source[sc.current-1]
+}
+
+func (sc *Scanner) addToken(typ TokenType, literal interface{}) {
+	text := sc.source[sc.start:sc.current]
+	newToken := Token{typ, text, literal, sc.line}
+	sc.tokens = append(sc.tokens, newToken)
 }
 
 func (sc *Scanner) match(expected byte) bool {
