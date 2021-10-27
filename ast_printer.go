@@ -5,6 +5,7 @@ import (
 	"strings"
 )
 
+// AstPrinter implements ExprVisitor
 type AstPrinter struct {
 }
 
