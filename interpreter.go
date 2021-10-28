@@ -2,7 +2,7 @@ package main
 
 import "fmt"
 
-// Interpreter implements ExprVisitor
+// Interpreter implements ExprVisitor, StmtVisitor
 type Interpreter struct {
 }
 
@@ -11,7 +11,7 @@ func NewInterpreter() *Interpreter {
 	return &i
 }
 
-func (i *Interpreter) Interpret(e Expr) {
+func (i *Interpreter) Interpret(statements []Stmt) {
 	defer func() {
 		if err := recover(); err != nil {
 			if iErr, ok := err.(*RuntimeError); ok {
@@ -21,13 +21,23 @@ func (i *Interpreter) Interpret(e Expr) {
 			}
 		}
 	}()
-	result := i.evaluate(e)
-	fmt.Println(result)
+	for _, stmt := range statements {
+		i.execute(stmt)
+	}
+
+}
+
+func (i *Interpreter) execute(s Stmt) {
+	s.accept(i)
 }
 
 func (i *Interpreter) evaluate(e Expr) interface{} {
 	return e.accept(i)
 }
+
+/*
+ * ExprVisitor implementation
+ */
 
 func (i *Interpreter) visitLiteralExpr(l *Literal) interface{} {
 	return l.value
@@ -124,4 +134,19 @@ func checkNumberOperand(operator *Token, value interface{}) {
 func checkNumberOperands(operator *Token, left interface{}, right interface{}) {
 	checkNumberOperand(operator, left)
 	checkNumberOperand(operator, right)
+}
+
+/*
+ * StmtVisitor implementation
+ */
+
+func (i *Interpreter) visitExpressionStmt(stmt *Expression) interface{} {
+	i.evaluate(stmt.expression)
+	return nil
+}
+
+func (i *Interpreter) visitPrintStmt(stmt *Print) interface{} {
+	v := i.evaluate(stmt.expression)
+	fmt.Println(v)
+	return nil
 }

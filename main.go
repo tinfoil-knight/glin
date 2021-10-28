@@ -49,19 +49,12 @@ func runPrompt() {
 }
 
 func run(source string) {
-	scanner := NewScanner(source)
-	tokens := scanner.ScanTokens()
-	fmt.Println(tokens)
-	parser := NewParser(*tokens)
-	expression := parser.Parse()
+	tokens := NewScanner(source).ScanTokens()
+	statements := NewParser(*tokens).Parse()
 
-	if hadError {
+	if hadError || hadRuntimeError {
 		return
 	}
 
-	printer := AstPrinter{}
-	printer.Print(*expression)
-
-	in := NewInterpreter()
-	in.Interpret(*expression)
+	NewInterpreter().Interpret(statements)
 }
