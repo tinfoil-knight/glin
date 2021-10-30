@@ -114,6 +114,12 @@ func (i *Interpreter) visitVariableExpr(v *Variable) interface{} {
 	return i.env.get(&v.name)
 }
 
+func (i *Interpreter) visitAssignExpr(a *Assign) interface{} {
+	value := i.evaluate(a.value)
+	i.env.assign(&a.name, value)
+	return value
+}
+
 func isTruthy(v interface{}) bool {
 	switch v.(type) {
 	case nil:

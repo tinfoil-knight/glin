@@ -45,6 +45,7 @@ func runPrompt() {
 		}
 		run(string(line))
 		hadError = false
+		hadRuntimeError = false
 	}
 }
 

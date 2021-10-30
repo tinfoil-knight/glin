@@ -37,6 +37,11 @@ func (a *AstPrinter) visitVariableExpr(_ *Variable) interface{} {
 	return nil
 }
 
+func (a *AstPrinter) visitAssignExpr(_ *Assign) interface{} {
+	// TODO: implement
+	return nil
+}
+
 func (a *AstPrinter) parenthesize(name string, exprs ...Expr) interface{} {
 	var b strings.Builder
 	fmt.Fprintf(&b, "(%s", name)

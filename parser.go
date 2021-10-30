@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // Parser uses recursive descent parsing
 type Parser struct {
 	tokens  []Token
@@ -24,7 +26,8 @@ func (p *Parser) Parse() []Stmt {
 func (p *Parser) declaration() Stmt {
 	defer func() {
 		if err := recover(); err != nil {
-			if _, ok := err.(*ParseError); ok {
+			if pErr, ok := err.(*ParseError); ok {
+				fmt.Println(pErr)
 				p.synchronize()
 			} else {
 				panic(err)
@@ -72,7 +75,25 @@ func (p *Parser) expressionStatement() Stmt {
 }
 
 func (p *Parser) expression() Expr {
-	return p.equality()
+	return p.assignment()
+}
+
+func (p *Parser) assignment() Expr {
+	expr := p.equality()
+
+	if p.match(EQUAL) {
+		equals := p.previous()
+		value := p.assignment()
+
+		if e, ok := (expr).(*Variable); ok {
+			name := e.name
+			return &Assign{name, value}
+		}
+
+		fmt.Println(NewParseError(&equals, "invalid assignment target"))
+	}
+
+	return expr
 }
 
 func (p *Parser) equality() Expr {
