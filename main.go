@@ -48,6 +48,9 @@ func runPrompt() {
 	}
 }
 
+// TODO: put in a session instead of this
+var in = NewInterpreter()
+
 func run(source string) {
 	tokens := NewScanner(source).ScanTokens()
 	statements := NewParser(*tokens).Parse()
@@ -56,5 +59,5 @@ func run(source string) {
 		return
 	}
 
-	NewInterpreter().Interpret(statements)
+	in.Interpret(statements)
 }

@@ -4,10 +4,11 @@ import "fmt"
 
 // Interpreter implements ExprVisitor, StmtVisitor
 type Interpreter struct {
+	env Environment
 }
 
 func NewInterpreter() *Interpreter {
-	i := Interpreter{}
+	i := Interpreter{*NewEnvironment()}
 	return &i
 }
 
@@ -109,6 +110,10 @@ func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {
 	return nil
 }
 
+func (i *Interpreter) visitVariableExpr(v *Variable) interface{} {
+	return i.env.get(&v.name)
+}
+
 func isTruthy(v interface{}) bool {
 	switch v.(type) {
 	case nil:
@@ -148,5 +153,16 @@ func (i *Interpreter) visitExpressionStmt(stmt *Expression) interface{} {
 func (i *Interpreter) visitPrintStmt(stmt *Print) interface{} {
 	v := i.evaluate(stmt.expression)
 	fmt.Println(v)
+	return nil
+}
+
+func (i *Interpreter) visitVarStmt(stmt *Var) interface{} {
+	var value interface{}
+
+	if stmt.initializer != nil {
+		value = i.evaluate(stmt.initializer)
+	}
+
+	i.env.define(stmt.name.lexeme, value)
 	return nil
 }

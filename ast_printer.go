@@ -32,6 +32,11 @@ func (a *AstPrinter) visitUnaryExpr(u *Unary) interface{} {
 	return a.parenthesize(u.operator.lexeme, u.right)
 }
 
+func (a *AstPrinter) visitVariableExpr(_ *Variable) interface{} {
+	// TODO: implement
+	return nil
+}
+
 func (a *AstPrinter) parenthesize(name string, exprs ...Expr) interface{} {
 	var b strings.Builder
 	fmt.Fprintf(&b, "(%s", name)

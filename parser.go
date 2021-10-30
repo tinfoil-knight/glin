@@ -1,7 +1,5 @@
 package main
 
-import "fmt"
-
 // Parser uses recursive descent parsing
 type Parser struct {
 	tokens  []Token
@@ -16,20 +14,41 @@ func NewParser(tokens []Token) *Parser {
 }
 
 func (p *Parser) Parse() []Stmt {
+	statements := []Stmt{}
+	for !p.isAtEnd() {
+		statements = append(statements, p.declaration())
+	}
+	return statements
+}
+
+func (p *Parser) declaration() Stmt {
 	defer func() {
 		if err := recover(); err != nil {
-			if pErr, ok := err.(*ParseError); ok {
-				fmt.Println(pErr)
+			if _, ok := err.(*ParseError); ok {
+				p.synchronize()
 			} else {
 				panic(err)
 			}
 		}
 	}()
-	statements := []Stmt{}
-	for !p.isAtEnd() {
-		statements = append(statements, p.statement())
+
+	if p.match(VAR) {
+		return p.varDeclaration()
 	}
-	return statements
+	return p.statement()
+}
+
+func (p *Parser) varDeclaration() Stmt {
+	name := p.consume(IDENTIFIER, "expect variable name")
+	var initializer Expr
+
+	if p.match(EQUAL) {
+		initializer = p.expression()
+	}
+
+	p.consume(SEMICOLON, "expect ';' after variable declaration")
+	return &Var{name, initializer}
+
 }
 
 func (p *Parser) statement() Stmt {
@@ -115,17 +134,17 @@ func (p *Parser) unary() Expr {
 }
 
 func (p *Parser) primary() Expr {
-	if p.match(FALSE) {
+	switch {
+	case p.match(FALSE):
 		return &Literal{false}
-	}
-	if p.match(TRUE) {
+	case p.match(TRUE):
 		return &Literal{true}
-	}
-	if p.match(NIL) {
+	case p.match(NIL):
 		return &Literal{nil}
-	}
-	if p.match(NUMBER, STRING) {
+	case p.match(NUMBER, STRING):
 		return &Literal{p.previous().literal}
+	case p.match(IDENTIFIER):
+		return &Variable{p.previous()}
 	}
 
 	if p.match(LEFT_PAREN) {

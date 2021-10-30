@@ -4,6 +4,7 @@ package main
 type StmtVisitor interface {
 	visitExpressionStmt(*Expression) interface{}
 	visitPrintStmt(*Print) interface{}
+	visitVarStmt(*Var) interface{}
 }
 
 type Stmt interface {
@@ -24,4 +25,13 @@ type Print struct {
 
 func (p *Print) accept(visitor StmtVisitor) interface{} {
 	return visitor.visitPrintStmt(p)
+}
+
+type Var struct {
+	name        Token
+	initializer Expr
+}
+
+func (v *Var) accept(visitor StmtVisitor) interface{} {
+	return visitor.visitVarStmt(v)
 }

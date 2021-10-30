@@ -6,6 +6,7 @@ type ExprVisitor interface {
 	visitGroupingExpr(*Grouping) interface{}
 	visitLiteralExpr(*Literal) interface{}
 	visitUnaryExpr(*Unary) interface{}
+	visitVariableExpr(*Variable) interface{}
 }
 
 type Expr interface {
@@ -45,4 +46,12 @@ type Unary struct {
 
 func (u *Unary) accept(visitor ExprVisitor) interface{} {
 	return visitor.visitUnaryExpr(u)
+}
+
+type Variable struct {
+	name Token
+}
+
+func (v *Variable) accept(visitor ExprVisitor) interface{} {
+	return visitor.visitVariableExpr(v)
 }
