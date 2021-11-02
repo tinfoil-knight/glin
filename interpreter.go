@@ -1,14 +1,16 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+)
 
 // Interpreter implements ExprVisitor, StmtVisitor
 type Interpreter struct {
-	env Environment
+	env *Environment
 }
 
 func NewInterpreter() *Interpreter {
-	i := Interpreter{*NewEnvironment()}
+	i := Interpreter{NewEnvironment(nil)}
 	return &i
 }
 
@@ -25,7 +27,6 @@ func (i *Interpreter) Interpret(statements []Stmt) {
 	for _, stmt := range statements {
 		i.execute(stmt)
 	}
-
 }
 
 func (i *Interpreter) execute(s Stmt) {
@@ -163,6 +164,7 @@ func (i *Interpreter) visitPrintStmt(stmt *Print) interface{} {
 }
 
 func (i *Interpreter) visitVarStmt(stmt *Var) interface{} {
+	// variables are initialized to nil if value is not provided
 	var value interface{}
 
 	if stmt.initializer != nil {
@@ -171,4 +173,21 @@ func (i *Interpreter) visitVarStmt(stmt *Var) interface{} {
 
 	i.env.define(stmt.name.lexeme, value)
 	return nil
+}
+
+func (i *Interpreter) visitBlockStmt(stmt *Block) interface{} {
+	i.executeBlock(stmt.statements, NewEnvironment(i.env))
+	return nil
+}
+
+func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) {
+	previous := i.env
+
+	defer func() { i.env = previous }()
+
+	i.env = environment
+
+	for _, statement := range statements {
+		i.execute(statement)
+	}
 }

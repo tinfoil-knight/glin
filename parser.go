@@ -58,7 +58,21 @@ func (p *Parser) statement() Stmt {
 	if p.match(PRINT) {
 		return p.printStatement()
 	}
+	if p.match(LEFT_BRACE) {
+		return &Block{p.block()}
+	}
 	return p.expressionStatement()
+}
+
+func (p *Parser) block() []Stmt {
+	statements := make([]Stmt, 0)
+
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		statements = append(statements, p.declaration())
+	}
+
+	p.consume(RIGHT_BRACE, "expect '}' after block")
+	return statements
 }
 
 func (p *Parser) printStatement() Stmt {

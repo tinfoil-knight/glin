@@ -2,6 +2,7 @@
 package main
 
 type StmtVisitor interface {
+	visitBlockStmt(*Block) interface{}
 	visitExpressionStmt(*Expression) interface{}
 	visitPrintStmt(*Print) interface{}
 	visitVarStmt(*Var) interface{}
@@ -9,6 +10,14 @@ type StmtVisitor interface {
 
 type Stmt interface {
 	accept(StmtVisitor) interface{}
+}
+
+type Block struct {
+	statements []Stmt
+}
+
+func (b *Block) accept(visitor StmtVisitor) interface{} {
+	return visitor.visitBlockStmt(b)
 }
 
 type Expression struct {
