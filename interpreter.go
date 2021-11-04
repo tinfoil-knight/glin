@@ -45,6 +45,22 @@ func (i *Interpreter) visitLiteralExpr(l *Literal) interface{} {
 	return l.value
 }
 
+func (i *Interpreter) visitLogicalExpr(l *Logical) interface{} {
+	left := i.evaluate(l.left)
+
+	if l.operator.typ == OR {
+		if isTruthy(left) {
+			return left
+		}
+	} else {
+		// l.operator.typ == AND
+		if !isTruthy(left) {
+			return left
+		}
+	}
+	return i.evaluate(l.right)
+}
+
 func (i *Interpreter) visitGroupingExpr(g *Grouping) interface{} {
 	return i.evaluate(g.expression)
 }
