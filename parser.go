@@ -60,6 +60,8 @@ func (p *Parser) statement() Stmt {
 		return p.printStatement()
 	case p.match(IF):
 		return p.ifStatement()
+	case p.match(WHILE):
+		return p.whileStatement()
 	case p.match(LEFT_BRACE):
 		return &Block{p.block()}
 	}
@@ -86,7 +88,7 @@ func (p *Parser) printStatement() Stmt {
 func (p *Parser) ifStatement() Stmt {
 	p.consume(LEFT_PAREN, "expect '(' after 'if'")
 	condition := p.expression()
-	p.consume(RIGHT_PAREN, "expect ')' after if condition")
+	p.consume(RIGHT_PAREN, "expect ')' after condition")
 
 	thenBranch := p.statement()
 	elseBranch := (Stmt)(nil)
@@ -96,6 +98,16 @@ func (p *Parser) ifStatement() Stmt {
 	}
 
 	return &If{condition, thenBranch, elseBranch}
+}
+
+func (p *Parser) whileStatement() Stmt {
+	p.consume(LEFT_PAREN, "expect '(' after 'while'")
+	condition := p.expression()
+	p.consume(RIGHT_PAREN, "expect ')' after condition")
+
+	body := p.statement()
+
+	return &While{condition, body}
 }
 
 func (p *Parser) expressionStatement() Stmt {

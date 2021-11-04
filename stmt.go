@@ -5,6 +5,7 @@ type StmtVisitor interface {
 	visitBlockStmt(*Block) interface{}
 	visitExpressionStmt(*Expression) interface{}
 	visitIfStmt(*If) interface{}
+	visitWhileStmt(*While) interface{}
 	visitPrintStmt(*Print) interface{}
 	visitVarStmt(*Var) interface{}
 }
@@ -37,6 +38,15 @@ type If struct {
 
 func (i *If) accept(visitor StmtVisitor) interface{} {
 	return visitor.visitIfStmt(i)
+}
+
+type While struct {
+	condition Expr
+	body      Stmt
+}
+
+func (w *While) accept(visitor StmtVisitor) interface{} {
+	return visitor.visitWhileStmt(w)
 }
 
 type Print struct {

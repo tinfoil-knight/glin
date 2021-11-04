@@ -190,6 +190,13 @@ func (i *Interpreter) visitIfStmt(stmt *If) interface{} {
 	return nil
 }
 
+func (i *Interpreter) visitWhileStmt(stmt *While) interface{} {
+	for isTruthy(i.evaluate(stmt.condition)) {
+		i.execute(stmt.body)
+	}
+	return nil
+}
+
 func (i *Interpreter) visitVarStmt(stmt *Var) interface{} {
 	// variables are initialized to nil if value is not provided
 	var value interface{}
