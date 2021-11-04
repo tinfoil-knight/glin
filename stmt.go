@@ -4,6 +4,7 @@ package main
 type StmtVisitor interface {
 	visitBlockStmt(*Block) interface{}
 	visitExpressionStmt(*Expression) interface{}
+	visitIfStmt(*If) interface{}
 	visitPrintStmt(*Print) interface{}
 	visitVarStmt(*Var) interface{}
 }
@@ -26,6 +27,16 @@ type Expression struct {
 
 func (e *Expression) accept(visitor StmtVisitor) interface{} {
 	return visitor.visitExpressionStmt(e)
+}
+
+type If struct {
+	condition  Expr
+	thenBranch Stmt
+	elseBranch Stmt
+}
+
+func (i *If) accept(visitor StmtVisitor) interface{} {
+	return visitor.visitIfStmt(i)
 }
 
 type Print struct {

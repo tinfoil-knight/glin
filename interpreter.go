@@ -163,6 +163,17 @@ func (i *Interpreter) visitPrintStmt(stmt *Print) interface{} {
 	return nil
 }
 
+func (i *Interpreter) visitIfStmt(stmt *If) interface{} {
+	if isTruthy(i.evaluate(stmt.condition)) {
+		i.execute(stmt.thenBranch)
+	} else {
+		if stmt.elseBranch != nil {
+			i.execute(stmt.elseBranch)
+		}
+	}
+	return nil
+}
+
 func (i *Interpreter) visitVarStmt(stmt *Var) interface{} {
 	// variables are initialized to nil if value is not provided
 	var value interface{}
