@@ -51,7 +51,6 @@ func (p *Parser) varDeclaration() Stmt {
 
 	p.consume(SEMICOLON, "expect ';' after variable declaration")
 	return &Var{name, initializer}
-
 }
 
 func (p *Parser) statement() Stmt {
@@ -292,7 +291,7 @@ func (p *Parser) primary() Expr {
 	panic(NewParseError(&a, "expect expression"))
 }
 
-// check if current token matches any given type
+// match checks if current token matches any given type
 func (p *Parser) match(types ...TokenType) bool {
 	for _, t := range types {
 		if p.check(t) {
@@ -303,7 +302,7 @@ func (p *Parser) match(types ...TokenType) bool {
 	return false
 }
 
-// returns true if token of given type
+// check returns true for token of given type
 func (p *Parser) check(typ TokenType) bool {
 	if p.isAtEnd() {
 		return false
@@ -311,7 +310,7 @@ func (p *Parser) check(typ TokenType) bool {
 	return p.peek().typ == typ
 }
 
-// consumes and returns current token
+// advance consumes and returns current token
 func (p *Parser) advance() Token {
 	if !p.isAtEnd() {
 		p.current++
@@ -319,22 +318,22 @@ func (p *Parser) advance() Token {
 	return p.previous()
 }
 
-// check if no tokens are left
+// isAtEnd returns true if no tokens are left
 func (p *Parser) isAtEnd() bool {
 	return p.peek().typ == EOF
 }
 
-// returns current token yet to consume
+// peek returns current token yet to consume
 func (p *Parser) peek() Token {
 	return p.tokens[p.current]
 }
 
-// returns last consumed token
+// previous returns last consumed token
 func (p *Parser) previous() Token {
 	return p.tokens[p.current-1]
 }
 
-// looks for given token, panics if not found
+// consume looks for given token, panics if not found
 func (p *Parser) consume(t TokenType, msg string) Token {
 	if p.check(t) {
 		return p.advance()
@@ -343,7 +342,8 @@ func (p *Parser) consume(t TokenType, msg string) Token {
 	panic(NewParseError(&a, msg))
 }
 
-// discards token unless at a statement boundary
+// synchronize discards token unless at a statement boundary
+// restores state on parsing errors
 func (p *Parser) synchronize() {
 	p.advance()
 
