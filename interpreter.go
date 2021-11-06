@@ -6,11 +6,14 @@ import (
 
 // Interpreter implements ExprVisitor, StmtVisitor
 type Interpreter struct {
-	env *Environment
+	env     *Environment
+	globals *Environment
 }
 
 func NewInterpreter() *Interpreter {
-	i := Interpreter{NewEnvironment(nil)}
+	globals := NewEnvironment(nil)
+	env := *globals // TODO: check
+	i := Interpreter{&env, globals}
 	return &i
 }
 
@@ -79,6 +82,28 @@ func (i *Interpreter) visitUnaryExpr(u *Unary) interface{} {
 	return nil
 }
 
+func (i *Interpreter) visitCallExpr(c *Call) interface{} {
+	callee := i.evaluate(c.callee)
+
+	var arguments []interface{}
+
+	for _, a := range c.arguments {
+		arguments = append(arguments, i.evaluate(a))
+	}
+
+	function, ok := callee.(LoxCallable)
+	if !ok {
+		panic(NewRuntimeError(&c.paren, "can only call functions and classes"))
+	}
+
+	if len(arguments) != function.arity() {
+		msg := fmt.Sprintf("expected %d arguments but got %d", function.arity(), len(arguments))
+		panic(NewRuntimeError(&c.paren, msg))
+	}
+
+	return function.call(i, arguments)
+}
+
 func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {
 	left := i.evaluate(b.left)
 	right := i.evaluate(b.right)
@@ -90,7 +115,6 @@ func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {
 				return l + r
 			}
 		}
-
 		if l, ok := left.(string); ok {
 			if r, ok := right.(string); ok {
 				return l + r
@@ -211,6 +235,12 @@ func (i *Interpreter) visitVarStmt(stmt *Var) interface{} {
 
 func (i *Interpreter) visitBlockStmt(stmt *Block) interface{} {
 	i.executeBlock(stmt.statements, NewEnvironment(i.env))
+	return nil
+}
+
+func (i *Interpreter) visitFunctionStmt(stmt *Function) interface{} {
+	function := NewLoxFunction(stmt)
+	i.env.define(stmt.name.lexeme, function)
 	return nil
 }
 

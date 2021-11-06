@@ -28,16 +28,16 @@ func (err *LexError) Error() string {
 }
 
 type ParseError struct {
-	token   *Token
+	token   Token
 	message string
 }
 
-func NewParseError(token *Token, message string) error {
+func NewParseError(token Token, message string) error {
 	hadError = true
-	return &ParseError{token, message}
+	return ParseError{token, message}
 }
 
-func (err *ParseError) Error() string {
+func (err ParseError) Error() string {
 	t := err.token
 	if t.typ == EOF {
 		return reporter(t.line, " at end", err.message)

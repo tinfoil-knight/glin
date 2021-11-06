@@ -32,6 +32,11 @@ func (a *AstPrinter) visitUnaryExpr(u *Unary) interface{} {
 	return a.parenthesize(u.operator.lexeme, u.right)
 }
 
+func (a *AstPrinter) visitCallExpr(_ *Call) interface{} {
+	// TODO: implement
+	return nil
+}
+
 func (a *AstPrinter) visitVariableExpr(_ *Variable) interface{} {
 	// TODO: implement
 	return nil

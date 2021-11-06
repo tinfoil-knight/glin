@@ -2,17 +2,15 @@ package main
 
 import "fmt"
 
-// Parser uses recursive descent parsing
+// Parser implements ExprVisitor, StmtVisitor
+// Uses recursive descent parsing
 type Parser struct {
 	tokens  []Token
-	current int // zero value for numeric types is 0
+	current int
 }
 
 func NewParser(tokens []Token) *Parser {
-	return &Parser{
-		tokens:  tokens,
-		current: 0,
-	}
+	return &Parser{tokens, 0}
 }
 
 func (p *Parser) Parse() []Stmt {
@@ -35,10 +33,43 @@ func (p *Parser) declaration() Stmt {
 		}
 	}()
 
+	if p.match(FUN) {
+		return p.function("function")
+	}
 	if p.match(VAR) {
 		return p.varDeclaration()
 	}
 	return p.statement()
+}
+
+// @param kind: "function", "method"
+func (p *Parser) function(kind string) Stmt {
+	name := p.consume(IDENTIFIER, "expect "+kind+" name")
+
+	p.consume(LEFT_PAREN, "expect '(' after "+kind+" name")
+
+	var parameters []Token
+
+	if !p.check(RIGHT_PAREN) {
+		for {
+			if len(parameters) >= 255 {
+				fmt.Println(NewParseError(p.peek(), "can't have more than 255 parameters"))
+			}
+
+			parameters = append(parameters, p.consume(IDENTIFIER, "expect parameter name"))
+			if !p.match(COMMA) {
+				break
+			}
+		}
+	}
+
+	p.consume(RIGHT_PAREN, "expect ')' after parameters")
+
+	p.consume(LEFT_BRACE, "expect '{' before "+kind+" body")
+
+	body := p.block()
+
+	return &Function{name, parameters, body}
 }
 
 func (p *Parser) varDeclaration() Stmt {
@@ -179,7 +210,7 @@ func (p *Parser) assignment() Expr {
 			return &Assign{name, value}
 		}
 
-		fmt.Println(NewParseError(&equals, "invalid assignment target"))
+		fmt.Println(NewParseError(equals, "invalid assignment target"))
 	}
 
 	return expr
@@ -264,7 +295,21 @@ func (p *Parser) unary() Expr {
 		return &Unary{operator, right}
 	}
 
-	return p.primary()
+	return p.call()
+}
+
+func (p *Parser) call() Expr {
+	expr := p.primary()
+
+	for {
+		if p.match(LEFT_PAREN) {
+			expr = p.finishCall(expr)
+		} else {
+			break
+		}
+	}
+
+	return expr
 }
 
 func (p *Parser) primary() Expr {
@@ -287,8 +332,7 @@ func (p *Parser) primary() Expr {
 		return &Grouping{expr}
 	}
 
-	a := p.peek()
-	panic(NewParseError(&a, "expect expression"))
+	panic(NewParseError(p.peek(), "expect expression"))
 }
 
 // match checks if current token matches any given type
@@ -338,8 +382,7 @@ func (p *Parser) consume(t TokenType, msg string) Token {
 	if p.check(t) {
 		return p.advance()
 	}
-	a := p.peek()
-	panic(NewParseError(&a, msg))
+	panic(NewParseError(p.peek(), msg))
 }
 
 // synchronize discards token unless at a statement boundary
@@ -361,4 +404,26 @@ func (p *Parser) synchronize() {
 
 		p.advance()
 	}
+}
+
+// finishCall returns a Call AST node with 0 or more arguments
+func (p *Parser) finishCall(callee Expr) Expr {
+	arguments := []Expr{}
+
+	if !p.check(RIGHT_PAREN) {
+		for {
+			if len(arguments) >= 255 {
+				fmt.Println(NewParseError(p.peek(), "can't have more than 255 arguments"))
+			}
+			arguments = append(arguments, p.expression())
+			if !p.match(COMMA) {
+				break
+			}
+		}
+	}
+
+	// location context in errors
+	paren := p.consume(RIGHT_PAREN, "expect ')' after arguments")
+
+	return &Call{callee, paren, arguments}
 }

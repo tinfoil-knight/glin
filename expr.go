@@ -4,6 +4,7 @@ package main
 type ExprVisitor interface {
 	visitAssignExpr(*Assign) interface{}
 	visitBinaryExpr(*Binary) interface{}
+	visitCallExpr(*Call) interface{}
 	visitGroupingExpr(*Grouping) interface{}
 	visitLiteralExpr(*Literal) interface{}
 	visitLogicalExpr(*Logical) interface{}
@@ -32,6 +33,16 @@ type Binary struct {
 
 func (b *Binary) accept(visitor ExprVisitor) interface{} {
 	return visitor.visitBinaryExpr(b)
+}
+
+type Call struct {
+	callee    Expr
+	paren     Token
+	arguments []Expr
+}
+
+func (c *Call) accept(visitor ExprVisitor) interface{} {
+	return visitor.visitCallExpr(c)
 }
 
 type Grouping struct {
