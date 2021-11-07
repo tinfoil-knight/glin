@@ -2,14 +2,15 @@ package main
 
 type LoxFunction struct {
 	declaration Function
+	closure     Environment
 }
 
-func NewLoxFunction(declaration *Function) *LoxFunction {
-	return &LoxFunction{*declaration}
+func NewLoxFunction(declaration *Function, closure *Environment) *LoxFunction {
+	return &LoxFunction{*declaration, *closure}
 }
 
 func (l *LoxFunction) call(interpreter *Interpreter, args []interface{}) (ret interface{}) {
-	env := NewEnvironment(interpreter.globals)
+	env := NewEnvironment(&l.closure)
 
 	for i := 0; i < len(l.declaration.params); i++ {
 		env.define(l.declaration.params[i].lexeme, args[i])

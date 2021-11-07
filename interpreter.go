@@ -247,7 +247,7 @@ func (i *Interpreter) visitBlockStmt(stmt *Block) interface{} {
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt *Function) interface{} {
-	function := NewLoxFunction(stmt)
+	function := NewLoxFunction(stmt, i.env)
 	i.env.define(stmt.name.lexeme, function)
 	return nil
 }
