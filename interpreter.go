@@ -203,6 +203,14 @@ func (i *Interpreter) visitPrintStmt(stmt *Print) interface{} {
 	return nil
 }
 
+func (i *Interpreter) visitReturnStmt(stmt *Return) interface{} {
+	value := (interface{})(nil)
+	if stmt.value != nil {
+		value = i.evaluate(stmt.value)
+	}
+	panic(NewReturn(value))
+}
+
 func (i *Interpreter) visitIfStmt(stmt *If) interface{} {
 	if isTruthy(i.evaluate(stmt.condition)) {
 		i.execute(stmt.thenBranch)

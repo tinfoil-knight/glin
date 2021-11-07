@@ -88,6 +88,8 @@ func (p *Parser) statement() Stmt {
 	switch {
 	case p.match(PRINT):
 		return p.printStatement()
+	case p.match(RETURN):
+		return p.returnStatement()
 	case p.match(IF):
 		return p.ifStatement()
 	case p.match(FOR):
@@ -115,6 +117,18 @@ func (p *Parser) printStatement() Stmt {
 	value := p.expression()
 	p.consume(SEMICOLON, "expect ';' after value")
 	return &Print{value}
+}
+
+func (p *Parser) returnStatement() Stmt {
+	keyword := p.previous()
+
+	var value Expr
+	if !p.check(SEMICOLON) {
+		value = p.expression()
+	}
+
+	p.consume(SEMICOLON, "expect ';' after return value")
+	return &Return{keyword, value}
 }
 
 func (p *Parser) ifStatement() Stmt {

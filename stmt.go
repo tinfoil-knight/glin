@@ -8,6 +8,7 @@ type StmtVisitor interface {
 	visitIfStmt(*If) interface{}
 	visitWhileStmt(*While) interface{}
 	visitPrintStmt(*Print) interface{}
+	visitReturnStmt(*Return) interface{}
 	visitVarStmt(*Var) interface{}
 }
 
@@ -66,6 +67,15 @@ type Print struct {
 
 func (p *Print) accept(visitor StmtVisitor) interface{} {
 	return visitor.visitPrintStmt(p)
+}
+
+type Return struct {
+	keyword Token
+	value   Expr
+}
+
+func (r *Return) accept(visitor StmtVisitor) interface{} {
+	return visitor.visitReturnStmt(r)
 }
 
 type Var struct {
