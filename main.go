@@ -24,6 +24,7 @@ func main() {
 func runFile(path string) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
+		// TODO: handle file not found error and return
 		panic(err)
 	}
 	run(string(data))
@@ -51,6 +52,7 @@ func runPrompt() {
 
 // TODO: put in a session instead of this
 var in = NewInterpreter()
+var re = NewResolver(in)
 
 func run(source string) {
 	tokens := NewScanner(source).ScanTokens()
@@ -59,6 +61,8 @@ func run(source string) {
 	if hadError || hadRuntimeError {
 		return
 	}
+
+	re.resolve(statements) // TODO: check for Repl
 
 	in.Interpret(statements)
 }

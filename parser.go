@@ -24,7 +24,7 @@ func (p *Parser) Parse() []Stmt {
 func (p *Parser) declaration() Stmt {
 	defer func() {
 		if err := recover(); err != nil {
-			if pErr, ok := err.(*ParseError); ok {
+			if pErr, ok := err.(ParseError); ok {
 				fmt.Println(pErr)
 				p.synchronize()
 			} else {

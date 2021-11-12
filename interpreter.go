@@ -8,12 +8,14 @@ import (
 type Interpreter struct {
 	env     *Environment
 	globals *Environment
+	locals  map[Expr]int
 }
 
 func NewInterpreter() *Interpreter {
 	globals := NewEnvironment(nil)
 	env := *globals // TODO: check
-	i := Interpreter{&env, globals}
+	locals := make(map[Expr]int, 0)
+	i := Interpreter{&env, globals, locals}
 	return &i
 }
 
@@ -34,6 +36,10 @@ func (i *Interpreter) Interpret(statements []Stmt) {
 
 func (i *Interpreter) execute(s Stmt) {
 	s.accept(i)
+}
+
+func (i *Interpreter) resolve(expr Expr, depth int) {
+	i.locals[expr] = depth
 }
 
 func (i *Interpreter) evaluate(e Expr) interface{} {
@@ -73,7 +79,7 @@ func (i *Interpreter) visitUnaryExpr(u *Unary) interface{} {
 
 	switch u.operator.typ {
 	case MINUS:
-		checkNumberOperand(&u.operator, right)
+		checkNumberOperand(u.operator, right)
 		return -(right).(float64)
 	case BANG:
 		return !isTruthy(right)
@@ -93,12 +99,12 @@ func (i *Interpreter) visitCallExpr(c *Call) interface{} {
 
 	function, ok := callee.(LoxCallable)
 	if !ok {
-		panic(NewRuntimeError(&c.paren, "can only call functions and classes"))
+		panic(NewRuntimeError(c.paren, "can only call functions and classes"))
 	}
 
 	if len(arguments) != function.arity() {
 		msg := fmt.Sprintf("expected %d arguments but got %d", function.arity(), len(arguments))
-		panic(NewRuntimeError(&c.paren, msg))
+		panic(NewRuntimeError(c.paren, msg))
 	}
 
 	return function.call(i, arguments)
@@ -120,27 +126,27 @@ func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {
 				return l + r
 			}
 		}
-		panic(NewRuntimeError(&b.operator, "operands must be two numbers or two strings"))
+		panic(NewRuntimeError(b.operator, "operands must be two numbers or two strings"))
 	case MINUS:
-		checkNumberOperands(&b.operator, left, right)
+		checkNumberOperands(b.operator, left, right)
 		return left.(float64) - right.(float64)
 	case SLASH:
-		checkNumberOperands(&b.operator, left, right)
+		checkNumberOperands(b.operator, left, right)
 		return left.(float64) / right.(float64)
 	case STAR:
-		checkNumberOperands(&b.operator, left, right)
+		checkNumberOperands(b.operator, left, right)
 		return left.(float64) * right.(float64)
 	case GREATER:
-		checkNumberOperands(&b.operator, left, right)
+		checkNumberOperands(b.operator, left, right)
 		return left.(float64) > right.(float64)
 	case GREATER_EQUAL:
-		checkNumberOperands(&b.operator, left, right)
+		checkNumberOperands(b.operator, left, right)
 		return left.(float64) >= right.(float64)
 	case LESS:
-		checkNumberOperands(&b.operator, left, right)
+		checkNumberOperands(b.operator, left, right)
 		return left.(float64) < right.(float64)
 	case LESS_EQUAL:
-		checkNumberOperands(&b.operator, left, right)
+		checkNumberOperands(b.operator, left, right)
 		return left.(float64) <= right.(float64)
 	case EQUAL_EQUAL:
 		return isEqual(left, right)
@@ -151,14 +157,26 @@ func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {
 	return nil
 }
 
-func (i *Interpreter) visitVariableExpr(v *Variable) interface{} {
-	return i.env.get(&v.name)
-}
-
 func (i *Interpreter) visitAssignExpr(a *Assign) interface{} {
 	value := i.evaluate(a.value)
-	i.env.assign(&a.name, value)
+	if distance, ok := i.locals[a]; ok {
+		i.env.assignAt(distance, a.name, value)
+	} else {
+		i.globals.assign(a.name, value)
+	}
 	return value
+}
+
+func (i *Interpreter) visitVariableExpr(v *Variable) interface{} {
+	return i.lookUpVariable(v.name, v)
+}
+
+func (i *Interpreter) lookUpVariable(name Token, expr Expr) interface{} {
+	if distance, ok := i.locals[expr]; ok {
+		return i.env.getAt(distance, name.lexeme)
+	}
+
+	return i.globals.get(name)
 }
 
 func isTruthy(v interface{}) bool {
@@ -176,14 +194,14 @@ func isEqual(a interface{}, b interface{}) bool {
 	return a == b
 }
 
-func checkNumberOperand(operator *Token, value interface{}) {
+func checkNumberOperand(operator Token, value interface{}) {
 	if _, ok := value.(float64); ok {
 		return
 	}
 	panic(NewRuntimeError(operator, "operand must be a number"))
 }
 
-func checkNumberOperands(operator *Token, left interface{}, right interface{}) {
+func checkNumberOperands(operator Token, left interface{}, right interface{}) {
 	checkNumberOperand(operator, left)
 	checkNumberOperand(operator, right)
 }

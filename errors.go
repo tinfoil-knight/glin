@@ -40,17 +40,17 @@ func NewParseError(token Token, message string) error {
 func (err ParseError) Error() string {
 	t := err.token
 	if t.typ == EOF {
-		return reporter(t.line, " at end", err.message)
+		return reporter(t.line, "at end", err.message)
 	}
 	return reporter(t.line, "at '"+t.lexeme+"'", err.message)
 }
 
 type RuntimeError struct {
-	token   *Token
+	token   Token
 	message string
 }
 
-func NewRuntimeError(token *Token, message string) error {
+func NewRuntimeError(token Token, message string) error {
 	hadRuntimeError = true
 	return &RuntimeError{token, message}
 }

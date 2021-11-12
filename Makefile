@@ -1,6 +1,10 @@
 default:
 	@echo "Specify a command to run with make"
 
+build:
+	@echo "> Building source"
+	go build .
+
 codegen:
 	@echo "> Generating code"
 	stringer -type=TokenType
