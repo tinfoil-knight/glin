@@ -5,12 +5,20 @@ import (
 )
 
 type Resolver struct {
-	interpreter *Interpreter
-	scopes      *Stack
+	interpreter     *Interpreter
+	scopes          *Stack
+	currentFunction FunctionType
 }
 
+type FunctionType int
+
+const (
+	NONE FunctionType = iota
+	FUNCTION
+)
+
 func NewResolver(interpreter *Interpreter) *Resolver {
-	return &Resolver{interpreter, &Stack{}}
+	return &Resolver{interpreter, &Stack{}, NONE}
 }
 
 /*
@@ -38,7 +46,7 @@ func (r *Resolver) visitFunctionStmt(stmt *Function) interface{} {
 	r.declare(stmt.name)
 	r.define(stmt.name)
 
-	r.resolveFunction(stmt)
+	r.resolveFunction(stmt, FUNCTION)
 	return nil
 }
 
@@ -62,6 +70,10 @@ func (r *Resolver) visitPrintStmt(stmt *Print) interface{} {
 }
 
 func (r *Resolver) visitReturnStmt(stmt *Return) interface{} {
+	if r.currentFunction == NONE {
+		fmt.Println(NewParseError(stmt.keyword, "can't return from top-level code"))
+	}
+
 	if stmt.value != nil {
 		r.resolveExpr(stmt.value)
 	}
@@ -78,7 +90,10 @@ func (r *Resolver) resolveStmt(statement Stmt) {
 	statement.accept(r)
 }
 
-func (r *Resolver) resolveFunction(function *Function) {
+func (r *Resolver) resolveFunction(function *Function, typ FunctionType) {
+	enclosingFunction := r.currentFunction
+	r.currentFunction = typ
+
 	r.beginScope()
 	for _, param := range function.params {
 		r.declare(param)
@@ -86,6 +101,8 @@ func (r *Resolver) resolveFunction(function *Function) {
 	}
 	r.resolve(function.body)
 	r.endScope()
+
+	r.currentFunction = enclosingFunction
 }
 
 /*
@@ -180,7 +197,14 @@ func (r *Resolver) declare(name Token) {
 		return
 	}
 
-	r.scopes.peek().put(name.lexeme, false)
+	scope := r.scopes.peek()
+
+	// prevents duplicate variable declarations in non-global scopes
+	if scope.containsKey(name.lexeme) {
+		fmt.Println(NewParseError(name, "already a variable with this name in this scope"))
+	}
+
+	scope.put(name.lexeme, false)
 }
 
 func (r *Resolver) define(name Token) {
