@@ -1,5 +1,6 @@
 package main
 
+// LoxFunction implements LoxCallable
 type LoxFunction struct {
 	declaration Function
 	closure     Environment
