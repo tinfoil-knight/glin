@@ -2,11 +2,12 @@ package main
 
 // LoxClass implements LoxCallable
 type LoxClass struct {
-	name string
+	name    string
+	methods map[string]LoxFunction
 }
 
-func NewLoxClass(name string) *LoxClass {
-	return &LoxClass{name}
+func NewLoxClass(name string, methods map[string]LoxFunction) *LoxClass {
+	return &LoxClass{name, methods}
 }
 
 func (l *LoxClass) arity() int {
@@ -16,6 +17,13 @@ func (l *LoxClass) arity() int {
 func (l *LoxClass) call(_ *Interpreter, _ []interface{}) interface{} {
 	instance := LoxInstance{*l, map[string]interface{}{}}
 	return instance
+}
+
+func (l *LoxClass) findMethod(name string) *LoxFunction {
+	if v, ok := l.methods[name]; ok {
+		return &v
+	}
+	return nil
 }
 
 func (l LoxClass) String() string {
@@ -30,6 +38,11 @@ type LoxInstance struct {
 func (l *LoxInstance) get(name Token) interface{} {
 	if v, ok := l.fields[name.lexeme]; ok {
 		return v
+	}
+
+	method := l.class.findMethod(name.lexeme)
+	if method != nil {
+		return method
 	}
 
 	panic(NewRuntimeError(name, "undefined property '"+name.lexeme+"'."))

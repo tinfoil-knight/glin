@@ -293,7 +293,16 @@ func (i *Interpreter) visitFunctionStmt(stmt *Function) interface{} {
 
 func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 	i.env.define(stmt.name.lexeme, nil)
-	class := NewLoxClass(stmt.name.lexeme)
+
+	methods := map[string]LoxFunction{}
+
+	for _, method := range stmt.methods {
+		m := method.(*Function)
+		function := NewLoxFunction(m, i.env)
+		methods[m.name.lexeme] = *function
+	}
+
+	class := NewLoxClass(stmt.name.lexeme, methods)
 	i.env.assign(stmt.name, class)
 	return nil
 }
