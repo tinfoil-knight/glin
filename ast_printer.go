@@ -52,6 +52,16 @@ func (a *AstPrinter) visitLogicalExpr(_ *Logical) interface{} {
 	return nil
 }
 
+func (a *AstPrinter) visitGetExpr(_ *Get) interface{} {
+	// TODO: implement
+	return nil
+}
+
+func (a *AstPrinter) visitSetExpr(_ *Set) interface{} {
+	// TODO: implement
+	return nil
+}
+
 func (a *AstPrinter) parenthesize(name string, exprs ...Expr) interface{} {
 	var b strings.Builder
 	fmt.Fprintf(&b, "(%s", name)

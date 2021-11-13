@@ -20,9 +20,11 @@ func main() {
 		"Assign   : name Token, value Expr",
 		"Binary   : left Expr, operator Token, right Expr",
 		"Call     : callee Expr, paren Token, arguments []Expr",
+		"Get      : object Expr, name Token",
 		"Grouping : expression Expr",
 		"Literal  : value interface{}",
 		"Logical  : left Expr, operator Token, right Expr",
+		"Set      : object Expr, name Token, value Expr",
 		"Unary    : operator Token, right Expr",
 		"Variable : name Token",
 	})

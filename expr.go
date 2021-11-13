@@ -5,9 +5,11 @@ type ExprVisitor interface {
 	visitAssignExpr(*Assign) interface{}
 	visitBinaryExpr(*Binary) interface{}
 	visitCallExpr(*Call) interface{}
+	visitGetExpr(*Get) interface{}
 	visitGroupingExpr(*Grouping) interface{}
 	visitLiteralExpr(*Literal) interface{}
 	visitLogicalExpr(*Logical) interface{}
+	visitSetExpr(*Set) interface{}
 	visitUnaryExpr(*Unary) interface{}
 	visitVariableExpr(*Variable) interface{}
 }
@@ -45,6 +47,15 @@ func (c *Call) accept(visitor ExprVisitor) interface{} {
 	return visitor.visitCallExpr(c)
 }
 
+type Get struct {
+	object Expr
+	name   Token
+}
+
+func (g *Get) accept(visitor ExprVisitor) interface{} {
+	return visitor.visitGetExpr(g)
+}
+
 type Grouping struct {
 	expression Expr
 }
@@ -69,6 +80,16 @@ type Logical struct {
 
 func (l *Logical) accept(visitor ExprVisitor) interface{} {
 	return visitor.visitLogicalExpr(l)
+}
+
+type Set struct {
+	object Expr
+	name   Token
+	value  Expr
+}
+
+func (s *Set) accept(visitor ExprVisitor) interface{} {
+	return visitor.visitSetExpr(s)
 }
 
 type Unary struct {

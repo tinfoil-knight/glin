@@ -4,6 +4,7 @@ import (
 	"fmt"
 )
 
+// Resolver implements ExprVisitor, StmtVisitor
 type Resolver struct {
 	interpreter     *Interpreter
 	scopes          *Stack
@@ -149,6 +150,11 @@ func (r *Resolver) visitCallExpr(c *Call) interface{} {
 	return nil
 }
 
+func (r *Resolver) visitGetExpr(g *Get) interface{} {
+	r.resolveExpr(g.object)
+	return nil
+}
+
 func (r *Resolver) visitGroupingExpr(g *Grouping) interface{} {
 	r.resolveExpr(g.expression)
 	return nil
@@ -161,6 +167,12 @@ func (r *Resolver) visitLiteralExpr(_ *Literal) interface{} {
 func (r *Resolver) visitLogicalExpr(l *Logical) interface{} {
 	r.resolveExpr(l.left)
 	r.resolveExpr(l.right)
+	return nil
+}
+
+func (r *Resolver) visitSetExpr(s *Set) interface{} {
+	r.resolveExpr(s.value)
+	r.resolveExpr(s.object)
 	return nil
 }
 

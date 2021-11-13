@@ -14,7 +14,7 @@ type Interpreter struct {
 func NewInterpreter() *Interpreter {
 	globals := NewEnvironment(nil)
 	env := *globals // TODO: check
-	locals := make(map[Expr]int, 0)
+	locals := map[Expr]int{}
 	i := Interpreter{&env, globals, locals}
 	return &i
 }
@@ -70,6 +70,19 @@ func (i *Interpreter) visitLogicalExpr(l *Logical) interface{} {
 	return i.evaluate(l.right)
 }
 
+func (i *Interpreter) visitSetExpr(s *Set) interface{} {
+	object := i.evaluate(s.object)
+	v, ok := object.(LoxInstance)
+
+	if !ok {
+		panic(NewRuntimeError(s.name, "only instances have fields"))
+	}
+
+	value := i.evaluate(s.value)
+	v.set(s.name, value)
+	return value
+}
+
 func (i *Interpreter) visitGroupingExpr(g *Grouping) interface{} {
 	return i.evaluate(g.expression)
 }
@@ -108,6 +121,14 @@ func (i *Interpreter) visitCallExpr(c *Call) interface{} {
 	}
 
 	return function.call(i, arguments)
+}
+
+func (i *Interpreter) visitGetExpr(g *Get) interface{} {
+	object := i.evaluate(g.object)
+	if v, ok := object.(LoxInstance); ok {
+		return v.get(g.name)
+	}
+	panic(NewRuntimeError(g.name, "only instances have properties"))
 }
 
 func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {

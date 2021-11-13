@@ -7,7 +7,7 @@ type Environment struct {
 
 func NewEnvironment(enclosing *Environment) *Environment {
 	return &Environment{
-		values:    make(map[string]interface{}),
+		values:    map[string]interface{}{},
 		enclosing: enclosing,
 	}
 }
