@@ -32,6 +32,12 @@ func (r *Resolver) visitBlockStmt(b *Block) interface{} {
 	return nil
 }
 
+func (r *Resolver) visitClassStmt(c *Class) interface{} {
+	r.declare(c.name)
+	r.define(c.name)
+	return nil
+}
+
 func (r *Resolver) visitVarStmt(v *Var) interface{} {
 	r.declare(v.name)
 	if v.initializer != nil {

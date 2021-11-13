@@ -33,13 +33,30 @@ func (p *Parser) declaration() Stmt {
 		}
 	}()
 
-	if p.match(FUN) {
+	switch true {
+	case p.match(CLASS):
+		return p.classDeclaration()
+	case p.match(FUN):
 		return p.function("function")
-	}
-	if p.match(VAR) {
+	case p.match(VAR):
 		return p.varDeclaration()
 	}
 	return p.statement()
+}
+
+func (p *Parser) classDeclaration() Stmt {
+	name := p.consume(IDENTIFIER, "expect class name")
+	p.consume(LEFT_BRACE, "expect '{' before class body")
+
+	methods := []Stmt{}
+
+	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
+		methods = append(methods, p.function("method"))
+	}
+
+	p.consume(RIGHT_BRACE, "expect '}' after class body")
+
+	return &Class{name, methods}
 }
 
 // @param kind: "function", "method"
@@ -205,7 +222,6 @@ func (p *Parser) expressionStatement() Stmt {
 	expr := p.expression()
 	p.consume(SEMICOLON, "expect ';' after expression")
 	return &Expression{expr}
-
 }
 
 func (p *Parser) expression() Expr {

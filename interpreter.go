@@ -270,6 +270,13 @@ func (i *Interpreter) visitFunctionStmt(stmt *Function) interface{} {
 	return nil
 }
 
+func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
+	i.env.define(stmt.name.lexeme, nil)
+	class := NewLoxClass(stmt.name.lexeme)
+	i.env.assign(stmt.name, class)
+	return nil
+}
+
 func (i *Interpreter) executeBlock(statements []Stmt, environment *Environment) {
 	previous := i.env
 

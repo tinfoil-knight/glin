@@ -3,6 +3,7 @@ package main
 
 type StmtVisitor interface {
 	visitBlockStmt(*Block) interface{}
+	visitClassStmt(*Class) interface{}
 	visitExpressionStmt(*Expression) interface{}
 	visitFunctionStmt(*Function) interface{}
 	visitIfStmt(*If) interface{}
@@ -22,6 +23,15 @@ type Block struct {
 
 func (b *Block) accept(visitor StmtVisitor) interface{} {
 	return visitor.visitBlockStmt(b)
+}
+
+type Class struct {
+	name    Token
+	methods []Stmt
+}
+
+func (c *Class) accept(visitor StmtVisitor) interface{} {
+	return visitor.visitClassStmt(c)
 }
 
 type Expression struct {
