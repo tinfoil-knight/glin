@@ -83,6 +83,11 @@ func (i *Interpreter) visitSetExpr(s *Set) interface{} {
 	return value
 }
 
+func (i *Interpreter) visitThisExpr(t *This) interface{} {
+	v := i.lookUpVariable(t.keyword, t).(*LoxInstance)
+	return *v
+}
+
 func (i *Interpreter) visitGroupingExpr(g *Grouping) interface{} {
 	return i.evaluate(g.expression)
 }
@@ -125,9 +130,11 @@ func (i *Interpreter) visitCallExpr(c *Call) interface{} {
 
 func (i *Interpreter) visitGetExpr(g *Get) interface{} {
 	object := i.evaluate(g.object)
+
 	if v, ok := object.(LoxInstance); ok {
 		return v.get(g.name)
 	}
+
 	panic(NewRuntimeError(g.name, "only instances have properties"))
 }
 

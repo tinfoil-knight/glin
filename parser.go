@@ -359,6 +359,8 @@ func (p *Parser) primary() Expr {
 		return &Literal{p.previous().literal}
 	case p.match(IDENTIFIER):
 		return &Variable{p.previous()}
+	case p.match(THIS):
+		return &This{p.previous()}
 	}
 
 	if p.match(LEFT_PAREN) {

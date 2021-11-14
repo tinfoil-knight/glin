@@ -36,13 +36,17 @@ func (r *Resolver) visitBlockStmt(b *Block) interface{} {
 
 func (r *Resolver) visitClassStmt(c *Class) interface{} {
 	r.declare(c.name)
+	r.define(c.name)
+
+	r.beginScope()
+	r.scopes.peek().put("this", true)
 
 	for _, method := range c.methods {
 		declaration := METHOD
 		r.resolveFunction(method.(*Function), declaration)
 	}
 
-	r.define(c.name)
+	r.endScope()
 	return nil
 }
 
@@ -180,6 +184,11 @@ func (r *Resolver) visitLogicalExpr(l *Logical) interface{} {
 func (r *Resolver) visitSetExpr(s *Set) interface{} {
 	r.resolveExpr(s.value)
 	r.resolveExpr(s.object)
+	return nil
+}
+
+func (r *Resolver) visitThisExpr(t *This) interface{} {
+	r.resolveLocal(t, t.keyword)
 	return nil
 }
 

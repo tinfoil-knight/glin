@@ -42,7 +42,7 @@ func (l *LoxInstance) get(name Token) interface{} {
 
 	method := l.class.findMethod(name.lexeme)
 	if method != nil {
-		return method
+		return method.bind(l)
 	}
 
 	panic(NewRuntimeError(name, "undefined property '"+name.lexeme+"'."))

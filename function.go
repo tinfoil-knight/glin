@@ -34,6 +34,12 @@ func (l *LoxFunction) arity() int {
 	return len(l.declaration.params)
 }
 
+func (l *LoxFunction) bind(instance *LoxInstance) *LoxFunction {
+	environment := NewEnvironment(&l.closure)
+	environment.define("this", instance)
+	return NewLoxFunction(&l.declaration, environment)
+}
+
 func (l *LoxFunction) String() string {
 	return "<fn " + l.declaration.name.lexeme + ">"
 }
