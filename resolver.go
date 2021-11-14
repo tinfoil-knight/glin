@@ -9,6 +9,7 @@ type Resolver struct {
 	interpreter     *Interpreter
 	scopes          *Stack
 	currentFunction FunctionType
+	currentClass    ClassType
 }
 
 type FunctionType int
@@ -19,8 +20,15 @@ const (
 	METHOD
 )
 
+type ClassType int
+
+const (
+	NONE_CLASS ClassType = iota
+	CLASS_TYPE
+)
+
 func NewResolver(interpreter *Interpreter) *Resolver {
-	return &Resolver{interpreter, &Stack{}, NONE}
+	return &Resolver{interpreter, &Stack{}, NONE, NONE_CLASS}
 }
 
 /*
@@ -35,6 +43,9 @@ func (r *Resolver) visitBlockStmt(b *Block) interface{} {
 }
 
 func (r *Resolver) visitClassStmt(c *Class) interface{} {
+	enclosingClass := r.currentClass
+	r.currentClass = CLASS_TYPE
+
 	r.declare(c.name)
 	r.define(c.name)
 
@@ -47,6 +58,8 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 	}
 
 	r.endScope()
+
+	r.currentClass = enclosingClass
 	return nil
 }
 
@@ -188,6 +201,10 @@ func (r *Resolver) visitSetExpr(s *Set) interface{} {
 }
 
 func (r *Resolver) visitThisExpr(t *This) interface{} {
+	if r.currentClass == NONE_CLASS {
+		fmt.Println(NewParseError(t.keyword, "can't use 'this' outside of a class"))
+		return nil
+	}
 	r.resolveLocal(t, t.keyword)
 	return nil
 }

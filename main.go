@@ -58,6 +58,10 @@ func run(source string) {
 	tokens := NewScanner(source).ScanTokens()
 	statements := NewParser(*tokens).Parse()
 
+	if hadError {
+		return
+	}
+
 	re.resolve(statements) // TODO: check for Repl
 
 	if hadError || hadRuntimeError {
