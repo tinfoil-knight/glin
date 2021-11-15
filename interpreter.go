@@ -293,7 +293,7 @@ func (i *Interpreter) visitBlockStmt(stmt *Block) interface{} {
 }
 
 func (i *Interpreter) visitFunctionStmt(stmt *Function) interface{} {
-	function := NewLoxFunction(stmt, i.env)
+	function := NewLoxFunction(stmt, i.env, false)
 	i.env.define(stmt.name.lexeme, function)
 	return nil
 }
@@ -305,7 +305,8 @@ func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 
 	for _, method := range stmt.methods {
 		m := method.(*Function)
-		function := NewLoxFunction(m, i.env)
+		isInit := m.name.lexeme == "init"
+		function := NewLoxFunction(m, i.env, isInit)
 		methods[m.name.lexeme] = *function
 	}
 

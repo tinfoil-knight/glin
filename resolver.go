@@ -18,6 +18,7 @@ const (
 	NONE FunctionType = iota
 	FUNCTION
 	METHOD
+	INITIALIZER
 )
 
 type ClassType int
@@ -53,8 +54,14 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 	r.scopes.peek().put("this", true)
 
 	for _, method := range c.methods {
+		m := method.(*Function)
 		declaration := METHOD
-		r.resolveFunction(method.(*Function), declaration)
+
+		isInit := m.name.lexeme == "init"
+		if isInit {
+			declaration = INITIALIZER
+		}
+		r.resolveFunction(m, declaration)
 	}
 
 	r.endScope()
@@ -106,6 +113,9 @@ func (r *Resolver) visitReturnStmt(stmt *Return) interface{} {
 	}
 
 	if stmt.value != nil {
+		if r.currentFunction == INITIALIZER {
+			fmt.Println(NewParseError(stmt.keyword, "can't return a value from an initializer"))
+		}
 		r.resolveExpr(stmt.value)
 	}
 	return nil
