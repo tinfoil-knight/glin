@@ -11,11 +11,19 @@ func NewLoxClass(name string, methods map[string]LoxFunction) *LoxClass {
 }
 
 func (l *LoxClass) arity() int {
-	return 0
+	initializer := l.findMethod("init")
+	if initializer == nil {
+		return 0
+	}
+	return initializer.arity()
 }
 
-func (l *LoxClass) call(_ *Interpreter, _ []interface{}) interface{} {
+func (l *LoxClass) call(interpreter *Interpreter, args []interface{}) interface{} {
 	instance := LoxInstance{*l, map[string]interface{}{}}
+	initializer := l.findMethod("init")
+	if initializer != nil {
+		initializer.bind(&instance).call(interpreter, args)
+	}
 	return instance
 }
 
