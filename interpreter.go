@@ -299,6 +299,16 @@ func (i *Interpreter) visitFunctionStmt(stmt *Function) interface{} {
 }
 
 func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
+	var superclass interface{}
+
+	if stmt.superclass != nil {
+		v := stmt.superclass.(*Variable)
+		superclass = i.evaluate(v)
+		if _, ok := superclass.(*LoxClass); !ok {
+			panic(NewRuntimeError(v.name, "superclass must be a class"))
+		}
+	}
+
 	i.env.define(stmt.name.lexeme, nil)
 
 	methods := map[string]LoxFunction{}
@@ -310,7 +320,8 @@ func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 		methods[m.name.lexeme] = *function
 	}
 
-	class := NewLoxClass(stmt.name.lexeme, methods)
+	s, _ := superclass.(*LoxClass)
+	class := NewLoxClass(stmt.name.lexeme, s, methods)
 	i.env.assign(stmt.name, class)
 	return nil
 }

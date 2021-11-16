@@ -50,6 +50,14 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 	r.declare(c.name)
 	r.define(c.name)
 
+	if c.superclass != nil {
+		v := (c.superclass).(*Variable)
+		if c.name.lexeme == v.name.lexeme {
+			fmt.Println(NewParseError(v.name, "a class can't inherit from itself"))
+		}
+		r.resolveExpr(v)
+	}
+
 	r.beginScope()
 	r.scopes.peek().put("this", true)
 

@@ -2,12 +2,13 @@ package main
 
 // LoxClass implements LoxCallable
 type LoxClass struct {
-	name    string
-	methods map[string]LoxFunction
+	name       string
+	superclass *LoxClass
+	methods    map[string]LoxFunction
 }
 
-func NewLoxClass(name string, methods map[string]LoxFunction) *LoxClass {
-	return &LoxClass{name, methods}
+func NewLoxClass(name string, superclass *LoxClass, methods map[string]LoxFunction) *LoxClass {
+	return &LoxClass{name, superclass, methods}
 }
 
 func (l *LoxClass) arity() int {
@@ -30,6 +31,9 @@ func (l *LoxClass) call(interpreter *Interpreter, args []interface{}) interface{
 func (l *LoxClass) findMethod(name string) *LoxFunction {
 	if v, ok := l.methods[name]; ok {
 		return &v
+	}
+	if l.superclass != nil {
+		return l.superclass.findMethod(name)
 	}
 	return nil
 }

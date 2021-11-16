@@ -46,6 +46,14 @@ func (p *Parser) declaration() Stmt {
 
 func (p *Parser) classDeclaration() Stmt {
 	name := p.consume(IDENTIFIER, "expect class name")
+
+	var superclass Expr
+
+	if p.match(LESS) {
+		p.consume(IDENTIFIER, "expect superclass name")
+		superclass = &Variable{p.previous()}
+	}
+
 	p.consume(LEFT_BRACE, "expect '{' before class body")
 
 	methods := []Stmt{}
@@ -56,7 +64,7 @@ func (p *Parser) classDeclaration() Stmt {
 
 	p.consume(RIGHT_BRACE, "expect '}' after class body")
 
-	return &Class{name, methods}
+	return &Class{name, superclass, methods}
 }
 
 // @param kind: "function", "method"
