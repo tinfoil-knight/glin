@@ -26,6 +26,7 @@ type ClassType int
 const (
 	NONE_CLASS ClassType = iota
 	CLASS_TYPE
+	SUBCLASS_TYPE
 )
 
 func NewResolver(interpreter *Interpreter) *Resolver {
@@ -51,6 +52,7 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 	r.define(c.name)
 
 	if c.superclass != nil {
+		r.currentClass = SUBCLASS_TYPE
 		v := (c.superclass).(*Variable)
 		if c.name.lexeme == v.name.lexeme {
 			fmt.Println(NewParseError(v.name, "a class can't inherit from itself"))
@@ -225,6 +227,12 @@ func (r *Resolver) visitSetExpr(s *Set) interface{} {
 }
 
 func (r *Resolver) visitSuperExpr(s *Super) interface{} {
+	if r.currentClass == NONE_CLASS {
+		fmt.Println(NewParseError(s.keyword, "can't use 'super' outside of a class"))
+	} else if r.currentClass == SUBCLASS_TYPE {
+		fmt.Println(NewParseError(s.keyword, "can't use 'super' in a class with no superclass"))
+	}
+
 	r.resolveLocal(s, s.keyword)
 	return nil
 }
