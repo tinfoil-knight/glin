@@ -369,9 +369,12 @@ func (p *Parser) primary() Expr {
 		return &Variable{p.previous()}
 	case p.match(THIS):
 		return &This{p.previous()}
-	}
-
-	if p.match(LEFT_PAREN) {
+	case p.match(SUPER):
+		keyword := p.previous()
+		p.consume(DOT, "expect '.' after 'super'")
+		method := p.consume(IDENTIFIER, "expect superclass method name")
+		return &Super{keyword, method}
+	case p.match(LEFT_PAREN):
 		expr := p.expression()
 		p.consume(RIGHT_PAREN, "expect ')' after expression.")
 		return &Grouping{expr}

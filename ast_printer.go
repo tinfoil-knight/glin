@@ -62,6 +62,11 @@ func (a *AstPrinter) visitSetExpr(_ *Set) interface{} {
 	return nil
 }
 
+func (a *AstPrinter) visitSuperExpr(_ *Super) interface{} {
+	// TODO: implement
+	return nil
+}
+
 func (a *AstPrinter) visitThisExpr(_ *This) interface{} {
 	// TODO: implement
 	return nil

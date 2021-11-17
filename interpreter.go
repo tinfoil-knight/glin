@@ -83,6 +83,18 @@ func (i *Interpreter) visitSetExpr(s *Set) interface{} {
 	return value
 }
 
+func (i *Interpreter) visitSuperExpr(s *Super) interface{} {
+	distance := i.locals[s]
+	superclass := i.env.getAt(distance, "super").(*LoxClass)
+	object := (i.env.getAt(distance-1, "this")).(*LoxInstance)
+	method := superclass.findMethod(s.method.lexeme)
+	if method == nil {
+		msg := fmt.Sprintf("undefined property %q", s.method.lexeme)
+		panic(NewRuntimeError(s.method, msg))
+	}
+	return method.bind(object)
+}
+
 func (i *Interpreter) visitThisExpr(t *This) interface{} {
 	v := i.lookUpVariable(t.keyword, t).(*LoxInstance)
 	return *v
@@ -311,6 +323,11 @@ func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 
 	i.env.define(stmt.name.lexeme, nil)
 
+	if stmt.superclass != nil {
+		i.env = NewEnvironment(i.env)
+		i.env.define("super", superclass)
+	}
+
 	methods := map[string]LoxFunction{}
 
 	for _, method := range stmt.methods {
@@ -318,6 +335,10 @@ func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 		isInit := m.name.lexeme == "init"
 		function := NewLoxFunction(m, i.env, isInit)
 		methods[m.name.lexeme] = *function
+	}
+
+	if stmt.superclass != nil {
+		i.env = i.env.enclosing
 	}
 
 	s, _ := superclass.(*LoxClass)

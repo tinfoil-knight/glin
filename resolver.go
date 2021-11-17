@@ -56,6 +56,8 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 			fmt.Println(NewParseError(v.name, "a class can't inherit from itself"))
 		}
 		r.resolveExpr(v)
+		r.beginScope()
+		r.scopes.peek().put("super", true)
 	}
 
 	r.beginScope()
@@ -73,6 +75,10 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 	}
 
 	r.endScope()
+
+	if c.superclass != nil {
+		r.endScope()
+	}
 
 	r.currentClass = enclosingClass
 	return nil
@@ -215,6 +221,11 @@ func (r *Resolver) visitLogicalExpr(l *Logical) interface{} {
 func (r *Resolver) visitSetExpr(s *Set) interface{} {
 	r.resolveExpr(s.value)
 	r.resolveExpr(s.object)
+	return nil
+}
+
+func (r *Resolver) visitSuperExpr(s *Super) interface{} {
+	r.resolveLocal(s, s.keyword)
 	return nil
 }
 
