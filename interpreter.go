@@ -331,10 +331,9 @@ func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 	methods := map[string]LoxFunction{}
 
 	for _, method := range stmt.methods {
-		m := method.(*Function)
-		isInit := m.name.lexeme == "init"
-		function := NewLoxFunction(m, i.env, isInit)
-		methods[m.name.lexeme] = *function
+		isInit := method.name.lexeme == "init"
+		function := NewLoxFunction(&method, i.env, isInit)
+		methods[method.name.lexeme] = *function
 	}
 
 	if stmt.superclass != nil {

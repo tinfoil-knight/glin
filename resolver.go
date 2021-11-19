@@ -66,14 +66,13 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 	r.scopes.peek().put("this", true)
 
 	for _, method := range c.methods {
-		m := method.(*Function)
 		declaration := METHOD
 
-		isInit := m.name.lexeme == "init"
+		isInit := method.name.lexeme == "init"
 		if isInit {
 			declaration = INITIALIZER
 		}
-		r.resolveFunction(m, declaration)
+		r.resolveFunction(&method, declaration)
 	}
 
 	r.endScope()

@@ -28,7 +28,7 @@ func (b *Block) accept(visitor StmtVisitor) interface{} {
 type Class struct {
 	name       Token
 	superclass Expr
-	methods    []Stmt
+	methods    []Function
 }
 
 func (c *Class) accept(visitor StmtVisitor) interface{} {

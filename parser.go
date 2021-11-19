@@ -56,10 +56,10 @@ func (p *Parser) classDeclaration() Stmt {
 
 	p.consume(LEFT_BRACE, "expect '{' before class body")
 
-	methods := []Stmt{}
+	methods := []Function{}
 
 	for !p.check(RIGHT_BRACE) && !p.isAtEnd() {
-		methods = append(methods, p.function("method"))
+		methods = append(methods, *p.function("method").(*Function))
 	}
 
 	p.consume(RIGHT_BRACE, "expect '}' after class body")
