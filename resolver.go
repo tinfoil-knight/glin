@@ -167,7 +167,6 @@ func (r *Resolver) resolveFunction(function *Function, typ FunctionType) {
  */
 
 func (r *Resolver) visitVariableExpr(v *Variable) interface{} {
-	// TODO: check if working
 	if !r.scopes.isEmpty() {
 		s := r.scopes.peek().get(v.name.lexeme)
 		if s != nil && *s == false {

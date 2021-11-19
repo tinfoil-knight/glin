@@ -24,8 +24,8 @@ func main() {
 func runFile(path string) {
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
-		// TODO: handle file not found error and return
-		panic(err)
+		fmt.Println(err)
+		return
 	}
 	run(string(data))
 	if hadError {

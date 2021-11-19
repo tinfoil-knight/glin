@@ -8,7 +8,7 @@ import (
 type Scanner struct {
 	source  string
 	tokens  []Token
-	start   int
+	start   int // of lexeme
 	current int
 	line    int
 }
