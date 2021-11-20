@@ -126,7 +126,8 @@ func (sc *Scanner) scanToken() {
 		} else if isAlpha(c) {
 			sc.identifer()
 		} else {
-			fmt.Println(NewLexError(sc.line, "unexpected character"))
+			msg := fmt.Sprintf("unexpected character: %q", c)
+			fmt.Println(NewLexError(sc.line, msg))
 		}
 	}
 }

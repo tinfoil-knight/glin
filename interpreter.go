@@ -13,7 +13,7 @@ type Interpreter struct {
 
 func NewInterpreter() *Interpreter {
 	globals := NewEnvironment(nil)
-	env := *globals // TODO: check
+	env := *globals
 	locals := map[Expr]int{}
 	i := Interpreter{&env, globals, locals}
 	return &i
@@ -172,6 +172,7 @@ func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {
 		return left.(float64) - right.(float64)
 	case SLASH:
 		checkNumberOperands(b.operator, left, right)
+		// returns +Inf or -Inf on division by zero since all numbers are float64
 		return left.(float64) / right.(float64)
 	case STAR:
 		checkNumberOperands(b.operator, left, right)
@@ -317,7 +318,9 @@ func (i *Interpreter) visitFunctionStmt(stmt *Function) interface{} {
 func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 	var superclass interface{}
 
-	if stmt.superclass != (Variable{}) {
+	hasSuperclass := stmt.superclass != (Variable{})
+
+	if hasSuperclass {
 		superclass = i.evaluate(&stmt.superclass)
 		if _, ok := superclass.(*LoxClass); !ok {
 			panic(NewRuntimeError(stmt.superclass.name, "superclass must be a class"))
@@ -326,7 +329,7 @@ func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 
 	i.env.define(stmt.name.lexeme, nil)
 
-	if stmt.superclass != (Variable{}) {
+	if hasSuperclass {
 		i.env = NewEnvironment(i.env)
 		i.env.define("super", superclass)
 	}
@@ -339,7 +342,7 @@ func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 		methods[method.name.lexeme] = *function
 	}
 
-	if stmt.superclass != (Variable{}) {
+	if hasSuperclass {
 		i.env = i.env.enclosing
 	}
 

@@ -18,6 +18,8 @@ See the `examples` directory and read through [Lox](https://craftinginterpreters
 
 - Most of the files should've ideally been under a specific sub-package lox but the folder structure is not going to be refactored to preserve the version control history for personal future reference.
 - This implementation doesn't have the `clock` native function as added by the author of the book.
+- Extensions Implemented:
+  - C-style Block Comments (without nesting)
 
 ## Attribution
 
