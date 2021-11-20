@@ -261,12 +261,16 @@ func (i *Interpreter) visitPrintStmt(stmt *Print) interface{} {
 	return nil
 }
 
+type ReturnT struct {
+	value interface{}
+}
+
 func (i *Interpreter) visitReturnStmt(stmt *Return) interface{} {
 	value := (interface{})(nil)
 	if stmt.value != nil {
 		value = i.evaluate(stmt.value)
 	}
-	panic(NewReturn(value))
+	panic(ReturnT{value})
 }
 
 func (i *Interpreter) visitIfStmt(stmt *If) interface{} {

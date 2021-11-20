@@ -20,7 +20,7 @@ func (l *LoxFunction) call(interpreter *Interpreter, args []interface{}) (ret in
 	// handle return statements
 	defer func() {
 		if err := recover(); err != nil {
-			if returnValue, ok := err.(*ReturnT); ok {
+			if returnValue, ok := err.(ReturnT); ok {
 				if l.isInit {
 					ret = l.closure.getAt(0, "this")
 				} else {
