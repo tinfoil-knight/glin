@@ -51,13 +51,13 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 	r.declare(c.name)
 	r.define(c.name)
 
-	if c.superclass != nil {
+	if c.superclass != (Variable{}) {
 		r.currentClass = SUBCLASS_TYPE
-		v := (c.superclass).(*Variable)
-		if c.name.lexeme == v.name.lexeme {
-			fmt.Println(NewParseError(v.name, "a class can't inherit from itself"))
+		superclass := c.superclass
+		if c.name.lexeme == superclass.name.lexeme {
+			fmt.Println(NewParseError(superclass.name, "a class can't inherit from itself"))
 		}
-		r.resolveExpr(v)
+		r.resolveExpr(&superclass)
 		r.beginScope()
 		r.scopes.peek().put("super", true)
 	}
@@ -77,7 +77,7 @@ func (r *Resolver) visitClassStmt(c *Class) interface{} {
 
 	r.endScope()
 
-	if c.superclass != nil {
+	if c.superclass != (Variable{}) {
 		r.endScope()
 	}
 
@@ -227,7 +227,7 @@ func (r *Resolver) visitSetExpr(s *Set) interface{} {
 func (r *Resolver) visitSuperExpr(s *Super) interface{} {
 	if r.currentClass == NONE_CLASS {
 		fmt.Println(NewParseError(s.keyword, "can't use 'super' outside of a class"))
-	} else if r.currentClass == SUBCLASS_TYPE {
+	} else if r.currentClass != SUBCLASS_TYPE {
 		fmt.Println(NewParseError(s.keyword, "can't use 'super' in a class with no superclass"))
 	}
 

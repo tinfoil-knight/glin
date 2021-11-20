@@ -313,17 +313,16 @@ func (i *Interpreter) visitFunctionStmt(stmt *Function) interface{} {
 func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 	var superclass interface{}
 
-	if stmt.superclass != nil {
-		v := stmt.superclass.(*Variable)
-		superclass = i.evaluate(v)
+	if stmt.superclass != (Variable{}) {
+		superclass = i.evaluate(&stmt.superclass)
 		if _, ok := superclass.(*LoxClass); !ok {
-			panic(NewRuntimeError(v.name, "superclass must be a class"))
+			panic(NewRuntimeError(stmt.superclass.name, "superclass must be a class"))
 		}
 	}
 
 	i.env.define(stmt.name.lexeme, nil)
 
-	if stmt.superclass != nil {
+	if stmt.superclass != (Variable{}) {
 		i.env = NewEnvironment(i.env)
 		i.env.define("super", superclass)
 	}
@@ -336,7 +335,7 @@ func (i *Interpreter) visitClassStmt(stmt *Class) interface{} {
 		methods[method.name.lexeme] = *function
 	}
 
-	if stmt.superclass != nil {
+	if stmt.superclass != (Variable{}) {
 		i.env = i.env.enclosing
 	}
 

@@ -47,11 +47,11 @@ func (p *Parser) declaration() Stmt {
 func (p *Parser) classDeclaration() Stmt {
 	name := p.consume(IDENTIFIER, "expect class name")
 
-	var superclass Expr
+	var superclass Variable
 
 	if p.match(LESS) {
 		p.consume(IDENTIFIER, "expect superclass name")
-		superclass = &Variable{p.previous()}
+		superclass = Variable{p.previous()}
 	}
 
 	p.consume(LEFT_BRACE, "expect '{' before class body")
