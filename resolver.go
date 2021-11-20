@@ -12,13 +12,13 @@ type Resolver struct {
 	currentClass    ClassType
 }
 
-type FunctionType int
+type FunctionType string
 
 const (
-	NONE FunctionType = iota
-	FUNCTION
-	METHOD
-	INITIALIZER
+	NONE        FunctionType = "None"
+	FUNCTION    FunctionType = "Function"
+	METHOD      FunctionType = "Method"
+	INITIALIZER FunctionType = "Initializer"
 )
 
 type ClassType int
