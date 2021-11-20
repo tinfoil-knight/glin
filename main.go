@@ -56,7 +56,7 @@ var re = NewResolver(in)
 
 func run(source string) {
 	tokens := NewScanner(source).ScanTokens()
-	statements := NewParser(*tokens).Parse()
+	statements := NewParser(tokens).Parse()
 
 	if hadError {
 		return

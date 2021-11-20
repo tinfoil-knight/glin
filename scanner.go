@@ -63,13 +63,13 @@ func NewScanner(source string) *Scanner {
 	}
 }
 
-func (sc *Scanner) ScanTokens() *[]Token {
+func (sc *Scanner) ScanTokens() []Token {
 	for !sc.isAtEnd() {
 		sc.start = sc.current
 		sc.scanToken()
 	}
 	sc.tokens = append(sc.tokens, Token{EOF, "", nil, sc.line})
-	return &sc.tokens
+	return sc.tokens
 }
 
 func (sc *Scanner) scanToken() {
