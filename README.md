@@ -20,6 +20,7 @@ See the `examples` directory and read through [Lox](https://craftinginterpreters
 - This implementation doesn't have the `clock` native function as added by the author of the book.
 - Extensions Implemented:
   - C-style Block Comments (without nesting)
+  - REPL automatically prints the results for single expressions
 
 ## Attribution
 

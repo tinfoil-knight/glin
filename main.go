@@ -22,12 +22,13 @@ func main() {
 }
 
 func runFile(path string) {
+	s := NewSession(false)
 	data, err := ioutil.ReadFile(path)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	run(string(data))
+	run(string(data), s)
 	if hadError {
 		os.Exit(65)
 	}
@@ -37,6 +38,7 @@ func runFile(path string) {
 }
 
 func runPrompt() {
+	s := NewSession(true)
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		fmt.Print("> ")
@@ -44,17 +46,13 @@ func runPrompt() {
 		if err != nil || len(line) == 0 {
 			break
 		}
-		run(string(line))
+		run(string(line), s)
 		hadError = false
 		hadRuntimeError = false
 	}
 }
 
-// TODO: put in a session instead of this
-var in = NewInterpreter()
-var re = NewResolver(in)
-
-func run(source string) {
+func run(source string, s Session) {
 	tokens := NewScanner(source).ScanTokens()
 	statements := NewParser(tokens).Parse()
 
@@ -62,11 +60,25 @@ func run(source string) {
 		return
 	}
 
-	re.resolve(statements) // TODO: check for Repl
+	s.resolver.resolve(statements)
 
 	if hadError || hadRuntimeError {
 		return
 	}
 
-	in.Interpret(statements)
+	s.interpreter.Interpret(statements)
+}
+
+type Session struct {
+	interpreter *Interpreter
+	resolver    *Resolver
+}
+
+func NewSession(replMode bool) Session {
+	in := NewInterpreter(replMode)
+
+	return Session{
+		interpreter: in,
+		resolver:    NewResolver(in),
+	}
 }

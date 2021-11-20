@@ -6,16 +6,17 @@ import (
 
 // Interpreter implements ExprVisitor, StmtVisitor
 type Interpreter struct {
-	env     *Environment
-	globals *Environment
-	locals  map[Expr]int
+	env      *Environment
+	globals  *Environment
+	locals   map[Expr]int
+	replMode bool
 }
 
-func NewInterpreter() *Interpreter {
+func NewInterpreter(replMode bool) *Interpreter {
 	globals := NewEnvironment(nil)
 	env := *globals
 	locals := map[Expr]int{}
-	i := Interpreter{&env, globals, locals}
+	i := Interpreter{&env, globals, locals, replMode}
 	return &i
 }
 
@@ -30,7 +31,15 @@ func (i *Interpreter) Interpret(statements []Stmt) {
 		}
 	}()
 	for _, stmt := range statements {
-		i.execute(stmt)
+		if !i.replMode {
+			i.execute(stmt)
+		} else {
+			if v, ok := (stmt).(*Expression); ok {
+				fmt.Println(i.evaluate(v.expression))
+			} else {
+				i.execute(stmt)
+			}
+		}
 	}
 }
 
