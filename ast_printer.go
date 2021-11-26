@@ -80,6 +80,10 @@ func (a *AstPrinter) visitCallExpr(c *Call) interface{} {
 }
 
 func (a *AstPrinter) visitVariableExpr(v *Variable) interface{} {
+	// for superclass
+	if v.name == (Token{}) {
+		return nil
+	}
 	return Node{
 		"_type": "Identifier",
 		"name":  v.name.lexeme,
@@ -106,24 +110,46 @@ func (a *AstPrinter) visitLogicalExpr(l *Logical) interface{} {
 	}
 }
 
-func (a *AstPrinter) visitGetExpr(_ *Get) interface{} {
-	// TODO: implement
-	return nil
+func (a *AstPrinter) visitGetExpr(g *Get) interface{} {
+	return Node{
+		"_type":  "GetExpression",
+		"object": a.resolveExpr(g.object),
+		"property": Node{
+			"_type": "Identifier",
+			"name":  g.name.lexeme,
+		},
+	}
 }
 
-func (a *AstPrinter) visitSetExpr(_ *Set) interface{} {
-	// TODO: implement
-	return nil
+func (a *AstPrinter) visitSetExpr(s *Set) interface{} {
+	return Node{
+		"_type": "SetExpression",
+		"left": Node{
+			"_type":  "MemberExpression",
+			"object": a.resolveExpr(s.object),
+			"property": Node{
+				"_type": "Identifier",
+				"name":  s.name.lexeme,
+			},
+		},
+		"right": a.resolveExpr(s.value),
+	}
 }
 
-func (a *AstPrinter) visitSuperExpr(_ *Super) interface{} {
-	// TODO: implement
-	return nil
+func (a *AstPrinter) visitSuperExpr(s *Super) interface{} {
+	return Node{
+		"_type": "MemberExpression",
+		"object": Node{
+			"_type": "Super",
+		},
+		"property": s.method.lexeme,
+	}
 }
 
 func (a *AstPrinter) visitThisExpr(_ *This) interface{} {
-	// TODO: implement
-	return nil
+	return Node{
+		"_type": "This",
+	}
 }
 
 /*
@@ -139,6 +165,7 @@ func (a *AstPrinter) visitBlockStmt(stmt *Block) interface{} {
 
 func (a *AstPrinter) visitClassStmt(stmt *Class) interface{} {
 	var methods []interface{}
+
 	for _, method := range stmt.methods {
 		kind := METHOD
 		if method.name.lexeme == "init" {
@@ -147,11 +174,10 @@ func (a *AstPrinter) visitClassStmt(stmt *Class) interface{} {
 		methods = append(methods, a.resolveFunction(method, kind))
 	}
 
-	// TODO: Handle superclass
 	return Node{
 		"_type":      "ClassStatement",
 		"id":         stmt.name.lexeme,
-		"superclass": "",
+		"superclass": a.resolveExpr(&stmt.superclass),
 		"body":       methods,
 	}
 }

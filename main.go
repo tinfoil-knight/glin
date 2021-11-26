@@ -60,6 +60,11 @@ func run(source string, s Session) {
 		return
 	}
 
+	if s.debugAst {
+		a := AstPrinter{}
+		a.Print(statements)
+	}
+
 	s.resolver.resolve(statements)
 
 	if hadError || hadRuntimeError {
@@ -72,6 +77,7 @@ func run(source string, s Session) {
 type Session struct {
 	interpreter *Interpreter
 	resolver    *Resolver
+	debugAst    bool
 }
 
 func NewSession(replMode bool) Session {
@@ -80,5 +86,6 @@ func NewSession(replMode bool) Session {
 	return Session{
 		interpreter: in,
 		resolver:    NewResolver(in),
+		debugAst:    false,
 	}
 }
