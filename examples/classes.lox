@@ -1,0 +1,40 @@
+class Rectangle {
+    init(length, breadth){
+        this.name = "Rectangle";
+        this.length = length;
+        this.breadth = breadth;
+    }
+
+    area(){
+        return this.length * this.breadth;
+    }
+
+    perimeter(){
+        return 2 * this.length * this.breadth;
+    }
+
+    describe(){
+        print "I'm a rectangle. My opposite sides are equal.";
+    }
+}
+
+class Square < Rectangle {
+    init(side){
+        super.init(side, side);
+        this.name = "Square";
+    }
+
+    describe(){
+        print "I'm a square. All my sides are equal.";
+    }
+}
+
+var r = Rectangle(5, 4);
+r.describe();
+print "My area is " + r.area() + " units.";
+
+
+var s = Square(5);
+s.describe();
+
+print "My perimeter is " + s.perimeter() + " units.";
