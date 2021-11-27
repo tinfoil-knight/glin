@@ -21,6 +21,7 @@ See the `examples` directory and read through [Lox](https://craftinginterpreters
 - Extensions Implemented:
   - C-style Block Comments (without nesting)
   - REPL automatically prints the results for single expressions
+  - `+` operand supports concatenation of string and float64
 
 ## Attribution
 
@@ -30,4 +31,3 @@ See the `examples` directory and read through [Lox](https://craftinginterpreters
 ## References:
 
 - For any non-descript exit code in `os.Exit()`, refer: [UNIX sysexits.h](https://www.freebsd.org/cgi/man.cgi?query=sysexits&apropos=0&sektion=0&manpath=FreeBSD+4.3-RELEASE&format=html)
-

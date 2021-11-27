@@ -168,14 +168,18 @@ func (i *Interpreter) visitBinaryExpr(b *Binary) interface{} {
 		if l, ok := left.(float64); ok {
 			if r, ok := right.(float64); ok {
 				return l + r
+			} else if r, ok := right.(string); ok {
+				return fmt.Sprint(l) + r
 			}
 		}
 		if l, ok := left.(string); ok {
 			if r, ok := right.(string); ok {
 				return l + r
+			} else if r, ok := right.(float64); ok {
+				return l + fmt.Sprint(r)
 			}
 		}
-		panic(NewRuntimeError(b.operator, "operands must be two numbers or two strings"))
+		panic(NewRuntimeError(b.operator, "operand must be a number or a string"))
 	case MINUS:
 		checkNumberOperands(b.operator, left, right)
 		return left.(float64) - right.(float64)
