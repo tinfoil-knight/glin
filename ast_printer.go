@@ -8,8 +8,7 @@ import (
 )
 
 // AstPrinter implements ExprVisitor, StmtVisitor
-type AstPrinter struct {
-}
+type AstPrinter struct{}
 
 func (a *AstPrinter) Print(statements []Stmt) {
 	nodes := a.Create(statements)
@@ -255,11 +254,14 @@ func (a *AstPrinter) resolveStmt(stmt Stmt) interface{} {
 	if stmt != nil {
 		return stmt.accept(a).(Node)
 	}
-	return ""
+	return nil
 }
 
 func (a *AstPrinter) resolveExpr(expr Expr) interface{} {
-	return expr.accept(a)
+	if expr != nil {
+		expr.accept(a)
+	}
+	return nil
 }
 
 func (a *AstPrinter) resolveFunction(f Function, kind FunctionType) interface{} {
