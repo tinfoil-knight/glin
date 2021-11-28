@@ -287,6 +287,12 @@ func (i *Interpreter) visitReturnStmt(stmt *Return) interface{} {
 	panic(ReturnT{value})
 }
 
+type BreakT struct{}
+
+func (i *Interpreter) visitBreakStmt(_ *Break) interface{} {
+	panic(BreakT{})
+}
+
 func (i *Interpreter) visitIfStmt(stmt *If) interface{} {
 	if isTruthy(i.evaluate(stmt.condition)) {
 		i.execute(stmt.thenBranch)
@@ -299,6 +305,15 @@ func (i *Interpreter) visitIfStmt(stmt *If) interface{} {
 }
 
 func (i *Interpreter) visitWhileStmt(stmt *While) interface{} {
+	// handle break statement
+	defer func() {
+		if err := recover(); err != nil {
+			if _, ok := err.(BreakT); !ok {
+				panic(err)
+			}
+		}
+	}()
+
 	for isTruthy(i.evaluate(stmt.condition)) {
 		i.execute(stmt.body)
 	}

@@ -10,6 +10,7 @@ type Resolver struct {
 	scopes          *Stack
 	currentFunction FunctionType
 	currentClass    ClassType
+	inLoop          bool
 }
 
 type FunctionType string
@@ -30,7 +31,7 @@ const (
 )
 
 func NewResolver(interpreter *Interpreter) *Resolver {
-	return &Resolver{interpreter, &Stack{}, NONE, NONE_CLASS}
+	return &Resolver{interpreter, &Stack{}, NONE, NONE_CLASS, false}
 }
 
 /*
@@ -136,9 +137,19 @@ func (r *Resolver) visitReturnStmt(stmt *Return) interface{} {
 	return nil
 }
 
+func (r *Resolver) visitBreakStmt(stmt *Break) interface{} {
+	if !r.inLoop {
+		fmt.Println(NewParseError(stmt.keyword, "can't use break outside loop"))
+	}
+	return nil
+}
+
 func (r *Resolver) visitWhileStmt(stmt *While) interface{} {
+	enclosedInLoop := r.inLoop
+	r.inLoop = true
 	r.resolveExpr(stmt.condition)
 	r.resolveStmt(stmt.body)
+	r.inLoop = enclosedInLoop
 	return nil
 }
 

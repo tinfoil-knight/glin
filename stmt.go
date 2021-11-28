@@ -10,6 +10,7 @@ type StmtVisitor interface {
 	visitWhileStmt(*While) interface{}
 	visitPrintStmt(*Print) interface{}
 	visitReturnStmt(*Return) interface{}
+	visitBreakStmt(*Break) interface{}
 	visitVarStmt(*Var) interface{}
 }
 
@@ -87,6 +88,14 @@ type Return struct {
 
 func (r *Return) accept(visitor StmtVisitor) interface{} {
 	return visitor.visitReturnStmt(r)
+}
+
+type Break struct {
+	keyword Token
+}
+
+func (b *Break) accept(visitor StmtVisitor) interface{} {
+	return visitor.visitBreakStmt(b)
 }
 
 type Var struct {

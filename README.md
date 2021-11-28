@@ -21,7 +21,8 @@ See the `examples` directory and read through [Lox](https://craftinginterpreters
 - Extensions Implemented:
   - C-style Block Comments (without nesting)
   - REPL automatically prints the results for single expressions
-  - `+` operand supports concatenation of string and float64
+  - `+` operand supports concatenation of string and number
+  - break statements
 
 ## Attribution
 

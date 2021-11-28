@@ -40,6 +40,7 @@ func main() {
 		"While		: condition Expr, body Stmt",
 		"Print      : expression Expr",
 		"Return     : keyword Token, value Expr",
+		"Break		: keyword Token",
 		"Var        : name Token, initializer Expr",
 	})
 }

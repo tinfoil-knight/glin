@@ -50,6 +50,7 @@ const (
 	TRUE
 	VAR
 	WHILE
+	BREAK
 
 	// end of file
 	EOF

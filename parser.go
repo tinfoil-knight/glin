@@ -115,6 +115,8 @@ func (p *Parser) statement() Stmt {
 		return p.printStatement()
 	case p.match(RETURN):
 		return p.returnStatement()
+	case p.match(BREAK):
+		return p.breakStatement()
 	case p.match(IF):
 		return p.ifStatement()
 	case p.match(FOR):
@@ -154,6 +156,13 @@ func (p *Parser) returnStatement() Stmt {
 
 	p.consume(SEMICOLON, "expect ';' after return value")
 	return &Return{keyword, value}
+}
+
+func (p *Parser) breakStatement() Stmt {
+	keyword := p.previous()
+
+	p.consume(SEMICOLON, "expect ';' after break statement")
+	return &Break{keyword}
 }
 
 func (p *Parser) ifStatement() Stmt {

@@ -216,6 +216,12 @@ func (a *AstPrinter) visitReturnStmt(stmt *Return) interface{} {
 	}
 }
 
+func (a *AstPrinter) visitBreakStmt(_ *Break) interface{} {
+	return Node{
+		"_type": "BreakStatement",
+	}
+}
+
 func (a *AstPrinter) visitVarStmt(stmt *Var) interface{} {
 	return Node{
 		"_type": "VariableDeclaration",
